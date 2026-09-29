@@ -57,9 +57,9 @@ export function Chapter({ id }: { id: SectionId }) {
       </motion.div>
 
       <motion.h3
-        className="mt-4 font-display text-[clamp(26px,4.2vw,56px)] font-semibold uppercase text-amber glow-amber"
+        className="mt-4 max-w-full font-display text-[clamp(21px,4.2vw,56px)] font-semibold uppercase text-amber glow-amber"
         initial={{ opacity: 0, letterSpacing: "0.9em", filter: "blur(10px)" }}
-        animate={seen ? { opacity: 1, letterSpacing: "0.22em", filter: "blur(0px)" } : undefined}
+        animate={seen ? { opacity: 1, letterSpacing: "0.18em", filter: "blur(0px)" } : undefined}
         transition={{ duration: 1.3, ease: [0.16, 1, 0.3, 1] }}
       >
         {meta.chapter}

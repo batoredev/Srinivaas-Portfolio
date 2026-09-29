@@ -78,7 +78,7 @@ function IdHologram() {
   return (
     <div className="relative mx-auto w-full max-w-[440px] pb-24" style={{ perspective: 1100 }}>
       {/* emitter + light cone */}
-      <div className="pointer-events-none absolute bottom-0 left-1/2 h-[110%] w-[120%] -translate-x-1/2 bg-[conic-gradient(from_180deg_at_50%_100%,transparent_150deg,rgba(79,227,255,0.14)_170deg,rgba(79,227,255,0.22)_180deg,rgba(79,227,255,0.14)_190deg,transparent_210deg)] [mask-image:linear-gradient(to_top,#000,transparent_85%)]" />
+      <div className="pointer-events-none absolute bottom-0 left-1/2 h-[110%] w-full -translate-x-1/2 bg-[conic-gradient(from_180deg_at_50%_100%,transparent_150deg,rgba(79,227,255,0.14)_170deg,rgba(79,227,255,0.22)_180deg,rgba(79,227,255,0.14)_190deg,transparent_210deg)] [mask-image:linear-gradient(to_top,#000,transparent_85%)]" />
       <div className="absolute bottom-3 left-1/2 h-9 w-[70%] -translate-x-1/2 rounded-[50%] border border-holo/50 bg-holo/10 shadow-[0_0_60px_rgba(79,227,255,0.5)]" />
       <div className="absolute bottom-5 left-1/2 h-4 w-[40%] -translate-x-1/2 rounded-[50%] bg-holo/60 blur-md" />
 

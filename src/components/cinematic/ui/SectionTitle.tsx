@@ -26,7 +26,7 @@ export type TitleEffect =
 const GLYPHS = "ΔΣΛΨΞΩ01<>/\\{}[]#$%&*+=?アカサタナハマヤラワ";
 
 const titleClass =
-  "font-display font-semibold uppercase leading-[0.92] tracking-[-0.01em] text-[clamp(40px,6.6vw,96px)] text-ice";
+  "font-display font-semibold uppercase leading-[0.92] tracking-[-0.01em] text-[clamp(32px,6.6vw,96px)] text-ice";
 
 /* ───────────────────────── helpers ───────────────────────── */
 
