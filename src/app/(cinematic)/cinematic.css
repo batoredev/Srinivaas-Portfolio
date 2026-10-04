@@ -38,6 +38,8 @@
 
 html {
   background: var(--void);
+  /* nothing may widen the page; clip (unlike hidden) keeps sticky working */
+  overflow-x: clip;
 }
 
 body {
@@ -357,6 +359,8 @@ html {
   position: relative;
   z-index: 2;
   padding-block: clamp(56px, 8vh, 104px);
+  /* entrance animations may start off-screen sideways; never let them widen the page */
+  overflow-x: clip;
 }
 .container-hud {
   width: min(1240px, calc(100vw - 32px));
