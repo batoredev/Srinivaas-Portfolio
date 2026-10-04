@@ -85,7 +85,16 @@ The 404 page only offers "Go back". The lock lasts for the browser session. To s
 
 ## Deploying
 
-Deploy anywhere that runs Next.js with a Node server (Vercel, Netlify, a VPS with `npm start`). The proxy needs a server, so `output: "export"` is not supported.
+The site deploys to **Cloudflare Workers** through the [OpenNext adapter](https://opennext.js.org/cloudflare). Pushing to `main` deploys production; every pull request gets a preview build.
+
+`wrangler.jsonc` builds the worker itself (`build.command`), so the Cloudflare dashboard needs no build command: the default deploy command (`npx wrangler deploy`) and preview command (`npx wrangler versions upload`) are enough. The adapter and Wrangler are pinned to exact versions so a new release can't break deploys unannounced.
+
+```bash
+npm run cf:preview   # build and serve the worker locally on the Cloudflare runtime
+npm run cf:deploy    # build and deploy (needs `npx wrangler login`)
+```
+
+It also runs anywhere with a Node server (Vercel, a VPS with `npm start`). The one-way-door proxy needs a server, so `output: "export"` (static hosting) is not supported.
 
 ## Stack
 

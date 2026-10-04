@@ -1,0 +1,30 @@
+{
+	"$schema": "node_modules/wrangler/config-schema.json",
+	// Cloudflare Workers deployment, built with the OpenNext adapter.
+	"name": "srinivaas-portfolio",
+	"main": ".open-next/worker.js",
+	"compatibility_date": "2026-10-04",
+	"compatibility_flags": ["nodejs_compat", "global_fetch_strictly_public"],
+	// Wrangler builds the worker itself before every deploy, preview upload and
+	// local dev run, so production and pull-request preview builds both work
+	// whatever build command the Cloudflare dashboard has.
+	"build": {
+		"command": "npx opennextjs-cloudflare build"
+	},
+	"assets": {
+		"directory": ".open-next/assets",
+		"binding": "ASSETS"
+	},
+	"services": [
+		{
+			// Self-reference service binding, the service name must match the worker name
+			// see https://opennext.js.org/cloudflare/caching
+			"binding": "WORKER_SELF_REFERENCE",
+			"service": "srinivaas-portfolio"
+		}
+	],
+	"images": {
+		// see https://opennext.js.org/cloudflare/howtos/image
+		"binding": "IMAGES"
+	}
+}
