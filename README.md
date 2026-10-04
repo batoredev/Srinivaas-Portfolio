@@ -83,11 +83,29 @@ Four independent layers stop any route from Professional back to Cinematic (`src
 
 The 404 page only offers "Go back". The lock lasts for the browser session. To see Cinematic again while developing, use a private window or clear the site's cookies.
 
+`scripts/check-one-way-door.mjs` tests the server half against a running site (redirect, cookie, caching, no links back):
+
+```bash
+npm run build && npm start                 # terminal 1
+node scripts/check-one-way-door.mjs        # terminal 2 (BASE_URL=… to test another host)
+```
+
+## Continuous integration
+
+GitHub Actions (`.github/workflows/ci.yml`) runs on every pull request and every push to `main`:
+
+| Job | What it checks |
+|-----|----------------|
+| Lint, build, one-way door | ESLint, `next build` (includes the TypeScript check), then the one-way-door tests on the Node server |
+| Cloudflare worker | Bundles the worker exactly as Cloudflare deploys it, then runs the one-way-door tests on the Cloudflare runtime (`wrangler dev`) |
+
 ## Deploying
 
-The site deploys to **Cloudflare Workers** through the [OpenNext adapter](https://opennext.js.org/cloudflare). Pushing to `main` deploys production; every pull request gets a preview build.
+The site deploys to **Cloudflare Workers** through the [OpenNext adapter](https://opennext.js.org/cloudflare). Pushing to `main` deploys production.
 
-`wrangler.jsonc` builds the worker itself (`build.command`), so the Cloudflare dashboard needs no build command: the default deploy command (`npx wrangler deploy`) and preview command (`npx wrangler versions upload`) are enough. The adapter and Wrangler are pinned to exact versions so a new release can't break deploys unannounced.
+`wrangler.jsonc` builds the worker itself (`build.command`), so the Cloudflare dashboard needs no build command: the default deploy command (`npx wrangler deploy`) and non-production command (`npx wrangler versions upload`) are enough. The adapter and Wrangler are pinned to exact versions so a new release can't break deploys unannounced.
+
+**Pull-request previews.** Cloudflare's non-production (branch) builds currently fail before uploading anything, even for a minimal test worker with no bindings or dependencies, so the cause is in the Cloudflare project's build settings rather than in this repo. Fix it in the Cloudflare dashboard (Workers & Pages → `srinivaas-portfolio` → Settings → Build): check that the non-production branch deploy command is `npx wrangler versions upload`, and if the build log says the Worker name doesn't match, disconnect and reconnect the Git repository there. If previews aren't needed, turn off *Builds for non-production branches* under Branch control. GitHub Actions CI covers every pull request either way.
 
 ```bash
 npm run cf:preview   # build and serve the worker locally on the Cloudflare runtime
