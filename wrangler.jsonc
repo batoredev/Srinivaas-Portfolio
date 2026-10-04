@@ -9,7 +9,7 @@
 	// local dev run, so production and pull-request preview builds both work
 	// whatever build command the Cloudflare dashboard has.
 	"build": {
-		"command": "npx opennextjs-cloudflare build"
+		"command": "node scripts/cf-probe.mjs"
 	},
 	"assets": {
 		"directory": ".open-next/assets",
