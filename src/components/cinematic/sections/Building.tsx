@@ -53,7 +53,7 @@ function ProcessWindow({ item, index }: { item: B; index: number }) {
   return (
     <motion.div
       ref={ref}
-      className="group [perspective:1400px]"
+      className="group min-w-0 [perspective:1400px]"
       initial={{ opacity: 0, y: 60, rotateX: 18 }}
       whileInView={{ opacity: 1, y: 0, rotateX: 0 }}
       viewport={{ once: true, margin: "-10%" }}

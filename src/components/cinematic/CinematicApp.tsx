@@ -45,14 +45,18 @@ function LenisBridge() {
 
 function useActiveSection() {
   useEffect(() => {
-    const els = sections.map((s) => document.getElementById(s.id)).filter(Boolean) as HTMLElement[];
+    // chapter cards count too: the HUD switches as soon as the narrator opens a chapter
+    const els = sections
+      .flatMap((s) => [document.getElementById(`chapter-${s.id}`), document.getElementById(s.id)])
+      .filter(Boolean) as HTMLElement[];
     const visited = new Set<string>();
     const io = new IntersectionObserver(
       (entries) => {
         for (const e of entries)
           if (e.isIntersecting) {
-            visited.add(e.target.id);
-            setStore({ active: e.target.id as SectionId, visited: visited.size });
+            const id = e.target.id.replace(/^chapter-/, "") as SectionId;
+            visited.add(id);
+            setStore({ active: id, visited: visited.size });
           }
       },
       { rootMargin: "-50% 0px -50% 0px" },

@@ -37,7 +37,7 @@ export function Chapter({ id }: { id: SectionId }) {
   }, [seen, meta.narration]);
 
   return (
-    <div ref={ref} id={`chapter-${id}`} className="relative z-[2] flex flex-col items-center px-5 pb-6 pt-10 text-center" aria-label={`Chapter ${meta.code}: ${meta.chapter}`}>
+    <div ref={ref} id={`chapter-${id}`} className="relative z-[2] flex flex-col items-center overflow-x-clip px-5 pb-6 pt-10 text-center" aria-label={`Chapter ${meta.code}: ${meta.chapter}`}>
       {/* signal thread in */}
       <span className="relative block h-24 w-px overflow-hidden bg-gradient-to-b from-transparent to-holo/40">
         <span className="absolute inset-x-0 h-8 bg-gradient-to-b from-transparent via-amber to-transparent" style={{ animation: "sweep-y 2.4s linear infinite" }} />
