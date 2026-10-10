@@ -47,8 +47,19 @@ jobs:
           node-version: 22
           cache: npm
       - run: npm ci
-      - name: Bundle the worker as Cloudflare deploys it
-        run: npx wrangler deploy --dry-run
+      # A real `wrangler deploy` (not --dry-run, which takes a different path).
+      # With no credentials it must build the worker and stop only at sign-in.
+      - name: Production deploy path builds the worker
+        env:
+          CLOUDFLARE_API_TOKEN: ""
+        run: |
+          npx wrangler deploy > deploy.log 2>&1 && { cat deploy.log; echo "::error::deploy unexpectedly succeeded without credentials"; exit 1; }
+          cat deploy.log
+          if grep -q "OpenNext project detected" deploy.log; then
+            echo "::error::wrangler deploy handed off to opennextjs-cloudflare deploy, which skips the build"; exit 1
+          fi
+          grep -q "OpenNext build complete" deploy.log || { echo "::error::the worker was not built"; exit 1; }
+          grep -q "CLOUDFLARE_API_TOKEN" deploy.log || { echo "::error::expected to stop only at sign-in"; exit 1; }
       - name: One-way door on the Cloudflare runtime
         run: |
           npx wrangler dev --ip 127.0.0.1 --port 8787 > wrangler-dev.log 2>&1 &
