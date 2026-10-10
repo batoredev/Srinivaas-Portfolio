@@ -102,6 +102,8 @@ The site deploys to **Cloudflare Workers** through the [OpenNext adapter](https:
 
 `wrangler.jsonc` builds the worker itself (`build.command`), so the Cloudflare dashboard needs no build command: the default deploy command (`npx wrangler deploy`) and non-production command (`npx wrangler versions upload`) are enough. The adapter and Wrangler are pinned to exact versions so a new release can't break deploys unannounced.
 
+The OpenNext config lives in `cloudflare/open-next.config.ts`, not the project root. With it in the root, a real `wrangler deploy` hands off to `opennextjs-cloudflare deploy`, which skips `build.command` and fails with *did you run the build command?* (`--dry-run` doesn't hand off, so it can't catch this). CI runs a real `wrangler deploy` without credentials to guard that path.
+
 **Pull-request previews.** Cloudflare's non-production (branch) builds currently fail before uploading anything, even for a minimal test worker with no bindings or dependencies, so the cause is in the Cloudflare project's build settings rather than in this repo. Fix it in the Cloudflare dashboard (Workers & Pages → `srinivaas-portfolio` → Settings → Build): check that the non-production branch deploy command is `npx wrangler versions upload`, and if the build log says the Worker name doesn't match, disconnect and reconnect the Git repository there. If previews aren't needed, turn off *Builds for non-production branches* under Branch control. GitHub Actions CI covers every pull request either way.
 
 ```bash

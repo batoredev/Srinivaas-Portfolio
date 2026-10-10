@@ -8,7 +8,7 @@
     "start": "next start",
     "lint": "eslint",
     "resume:pdf": "node scripts/generate-resume-pdf.mjs",
-    "cf:build": "opennextjs-cloudflare build",
+    "cf:build": "opennextjs-cloudflare build --openNextConfigPath cloudflare/open-next.config.ts",
     "cf:preview": "wrangler dev",
     "cf:deploy": "wrangler deploy"
   },

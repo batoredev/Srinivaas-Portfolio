@@ -6,10 +6,11 @@
 	"compatibility_date": "2026-10-01",
 	"compatibility_flags": ["nodejs_compat", "global_fetch_strictly_public"],
 	// Wrangler builds the worker itself before every deploy, preview upload and
-	// local dev run, so production and pull-request preview builds both work
-	// whatever build command the Cloudflare dashboard has.
+	// local dev run, so deploys don't depend on the dashboard's build command.
+	// The OpenNext config sits in cloudflare/ so that `wrangler deploy` runs
+	// this build instead of handing off to `opennextjs-cloudflare deploy`.
 	"build": {
-		"command": "npx opennextjs-cloudflare build"
+		"command": "npx opennextjs-cloudflare build --openNextConfigPath cloudflare/open-next.config.ts"
 	},
 	"assets": {
 		"directory": ".open-next/assets",
