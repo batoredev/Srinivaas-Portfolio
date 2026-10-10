@@ -5,6 +5,7 @@ import { AnimatePresence, motion } from "motion/react";
 import { useState } from "react";
 import { profile } from "@/data/content";
 import { hudAudio } from "@/lib/audio";
+import { setStore } from "@/lib/store";
 import { SectionTitle } from "../ui/SectionTitle";
 
 const HandCanvas = dynamic(() => import("../three/RoboticHand"), { ssr: false });
@@ -142,6 +143,16 @@ export function Contact() {
                   <span className="text-[15px] text-ice transition-colors group-hover:text-amber">{c.v} ↗</span>
                 </a>
               ))}
+            </div>
+
+            {/* the résumé, folded into the handshake */}
+            <div className="mt-10 flex flex-col gap-3 sm:flex-row">
+              <a href={profile.resumePdf} download className="btn-ghost justify-center" data-lock="Download résumé">
+                Résumé · PDF <span aria-hidden>↓</span>
+              </a>
+              <button type="button" className="btn-ghost justify-center" data-lock="Professional mode" onClick={() => setStore({ handoff: true })}>
+                Professional mode <span aria-hidden>↗</span>
+              </button>
             </div>
           </div>
 

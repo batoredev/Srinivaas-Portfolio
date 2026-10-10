@@ -1,0 +1,55 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  WRANGLER_SEND_METRICS: "false"
+  NEXT_TELEMETRY_DISABLED: "1"
+
+jobs:
+  app:
+    name: Lint, build, one-way door
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npm run lint
+      - name: Build (includes the TypeScript check)
+        run: npm run build
+      - name: One-way door on the Node server
+        run: |
+          npm start > next-start.log 2>&1 &
+          node scripts/check-one-way-door.mjs || { cat next-start.log; exit 1; }
+
+  worker:
+    name: Cloudflare worker
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - name: Bundle the worker as Cloudflare deploys it
+        run: npx wrangler deploy --dry-run
+      - name: One-way door on the Cloudflare runtime
+        run: |
+          npx wrangler dev --ip 127.0.0.1 --port 8787 > wrangler-dev.log 2>&1 &
+          BASE_URL=http://127.0.0.1:8787 WAIT_SECONDS=300 node scripts/check-one-way-door.mjs || { cat wrangler-dev.log; exit 1; }

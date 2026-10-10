@@ -2,31 +2,11 @@
 
 import { AnimatePresence, motion } from "motion/react";
 import { useCallback, useEffect, useRef, useState } from "react";
-import { profile } from "@/data/content";
 import { hudAudio } from "@/lib/audio";
 import { usePrefersReducedMotion } from "@/lib/hooks";
-import { setStore, useStore } from "@/lib/store";
-import { powerDownToProfessional } from "./Handoff";
+import { getStore, setStore, useStore } from "@/lib/store";
 
-const LOG = [
-  ["OK", "Mounting /dev/imagination"],
-  ["OK", "Loading neural lattice ........ 15,000 nodes"],
-  ["OK", "Syncing Perfect Study Space ... ~2,000 students"],
-  ["OK", "Warming PostGIS spatial index"],
-  ["OK", "Indexing pgvector embeddings"],
-  ["OK", "Cloudflare Tunnel ............. 0 open ports"],
-  ["OK", "Waking agents ................. 31 standing by"],
-  ["WARN", "Chai reserves at 23%"],
-  ["OK", "Holographic projectors ........ online"],
-] as const;
-
-function greeting() {
-  const h = new Date().getHours();
-  if (h < 5) return "Burning the midnight oil?";
-  if (h < 12) return "Good morning.";
-  if (h < 17) return "Good afternoon.";
-  return "Good evening.";
-}
+const BOOT_MS = 2600;
 
 function Reactor({ progress }: { progress: number }) {
   const R = 180;
@@ -115,60 +95,24 @@ function Reactor({ progress }: { progress: number }) {
   );
 }
 
+/**
+ * Arc-reactor power-up. No choices and no text: the core charges to 100%,
+ * then the interface opens straight into the story. Enter or Skip opens it
+ * immediately; Professional mode stays one click away in the HUD and hero.
+ */
 export function BootSequence({ onDone }: { onDone: () => void }) {
   const reduced = usePrefersReducedMotion();
   const audio = useStore((s) => s.audio);
-  const [phase, setPhase] = useState<"ignite" | "boot" | "ready" | "exit">("ignite");
-  const [lines, setLines] = useState(0);
+  const [phase, setPhase] = useState<"ignite" | "boot" | "exit">("ignite");
   const [progress, setProgress] = useState(0);
-  const [typed, setTyped] = useState("");
-  const [greet] = useState(greeting);
   const exiting = useRef(false);
-
-  const message = `${greet} You've reached the neural interface of ${profile.name}. I can walk you through how he was built, one chapter at a time, or hand you the résumé.`;
-
-  // ignite → boot
-  useEffect(() => {
-    const t = setTimeout(() => setPhase("boot"), reduced ? 50 : 750);
-    return () => clearTimeout(t);
-  }, [reduced]);
-
-  // boot log + progress
-  useEffect(() => {
-    if (phase !== "boot") return;
-    let i = 0;
-    const id = setInterval(
-      () => {
-        i++;
-        setLines(i);
-        setProgress(Math.min(1, i / LOG.length));
-        if (i >= LOG.length) {
-          clearInterval(id);
-          setTimeout(() => setPhase("ready"), reduced ? 0 : 450);
-        }
-      },
-      reduced ? 10 : 230,
-    );
-    return () => clearInterval(id);
-  }, [phase, reduced]);
-
-  // typed greeting
-  useEffect(() => {
-    if (phase !== "ready") return;
-    let i = 0;
-    const id = setInterval(() => {
-      i += 2;
-      setTyped(message.slice(0, i));
-      if (i >= message.length) clearInterval(id);
-    }, 18);
-    return () => clearInterval(id);
-  }, [phase, message]);
 
   const engage = useCallback(() => {
     if (exiting.current) return;
     exiting.current = true;
-    hudAudio.engage();
-    hudAudio.speak("Welcome. All systems online.");
+    setProgress(1);
+    // only touch WebAudio once the visitor has opted in (no autoplay warnings)
+    if (getStore().audio) hudAudio.engage();
     setPhase("exit");
     try {
       sessionStorage.setItem("sv_engaged", "1");
@@ -179,35 +123,41 @@ export function BootSequence({ onDone }: { onDone: () => void }) {
     setTimeout(onDone, 1900);
   }, [onDone]);
 
-  const professional = useCallback(() => {
-    if (exiting.current) return;
-    exiting.current = true;
-    powerDownToProfessional();
-  }, []);
+  // ignite → boot
+  useEffect(() => {
+    const t = setTimeout(() => setPhase("boot"), reduced ? 50 : 750);
+    return () => clearTimeout(t);
+  }, [reduced]);
 
-  const skip = useCallback(() => {
-    setLines(LOG.length);
-    setProgress(1);
-    setPhase("ready");
-  }, []);
+  // charge the core, then open the interface
+  useEffect(() => {
+    if (phase !== "boot") return;
+    const duration = reduced ? 300 : BOOT_MS;
+    const t0 = performance.now();
+    let raf = 0;
+    const tick = (now: number) => {
+      const k = Math.min(1, (now - t0) / duration);
+      // whole percents: the reactor re-renders ~100 times, not every frame
+      setProgress(Math.round((1 - Math.pow(1 - k, 2)) * 100) / 100);
+      if (k < 1) raf = requestAnimationFrame(tick);
+      else engage();
+    };
+    raf = requestAnimationFrame(tick);
+    return () => cancelAnimationFrame(raf);
+  }, [phase, reduced, engage]);
 
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
-      if (e.key === "Enter") {
-        if (phase === "ready") engage();
-        else skip();
-      } else if (e.key.toLowerCase() === "p" && phase === "ready") professional();
+      if (e.key === "Enter" || e.key === "Escape") engage();
       else if (e.key.toLowerCase() === "s") {
         const next = !audio;
         hudAudio.setEnabled(next);
         setStore({ audio: next });
-      } else if (e.key === "Escape" && phase === "boot") skip();
+      }
     };
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
-  }, [phase, engage, professional, skip, audio]);
-
-  const ready = phase === "ready";
+  }, [engage, audio]);
 
   return (
     <AnimatePresence>
@@ -232,10 +182,10 @@ export function BootSequence({ onDone }: { onDone: () => void }) {
           transition={{ duration: phase === "ignite" ? 0.6 : 0.5, ease: [0.16, 1, 0.3, 1] }}
         />
 
-        {/* corner readouts */}
+        {/* corner controls */}
         <div className="absolute left-5 top-5 flex items-center gap-3 sm:left-8 sm:top-7">
           <span className="live-dot" />
-          <span className="hud-label">SV-OS · Boot sequence</span>
+          <span className="hud-label">SV-OS</span>
         </div>
         <div className="absolute right-5 top-5 flex items-center gap-4 sm:right-8 sm:top-7">
           <button
@@ -251,8 +201,8 @@ export function BootSequence({ onDone }: { onDone: () => void }) {
           >
             [S] Sound {audio ? "● on" : "○ off"}
           </button>
-          {!ready && phase !== "exit" && (
-            <button type="button" onClick={skip} className="hud-label hover:text-ice" data-lock="Skip boot">
+          {phase !== "exit" && (
+            <button type="button" onClick={engage} className="hud-label hover:text-ice" data-lock="Skip boot">
               Skip ▸
             </button>
           )}
@@ -267,9 +217,7 @@ export function BootSequence({ onDone }: { onDone: () => void }) {
               ? { opacity: 0, scale: 0.6 }
               : phase === "exit"
                 ? { opacity: 0, scale: 3.2, y: "-50%" }
-                : ready
-                  ? { opacity: 1, scale: 0.52, y: "-92%" }
-                  : { opacity: 1, scale: 1, y: "-50%" }
+                : { opacity: 1, scale: 1, y: "-50%" }
           }
           transition={{ duration: phase === "exit" ? 1.3 : 1, ease: [0.7, 0, 0.2, 1] }}
           style={{ x: "-50%" }}
@@ -282,78 +230,10 @@ export function BootSequence({ onDone }: { onDone: () => void }) {
           </div>
         </motion.div>
 
-        {/* boot log */}
-        <div className="absolute bottom-6 left-5 max-w-[92vw] font-mono text-[10.5px] leading-[1.75] sm:bottom-8 sm:left-8 sm:text-[11.5px]">
-          {LOG.slice(0, lines).map(([lvl, msg], i) => (
-            <motion.div
-              key={i}
-              initial={{ opacity: 0, x: -8 }}
-              animate={{ opacity: ready ? 0.35 : 1, x: 0 }}
-              transition={{ duration: 0.25 }}
-              className="whitespace-pre"
-            >
-              <span className={lvl === "OK" ? "text-mint" : "text-amber"}>[{lvl === "OK" ? " OK " : "WARN"}]</span>{" "}
-              <span className="text-ice/75">{msg}</span>
-            </motion.div>
-          ))}
+        {/* charge bar */}
+        <div className="absolute bottom-8 left-1/2 h-px w-[min(60vw,320px)] -translate-x-1/2 bg-holo/15">
+          <div className="h-full origin-left bg-amber shadow-[0_0_10px_#ffb547]" style={{ transform: `scaleX(${progress})` }} />
         </div>
-        <div className="absolute bottom-6 right-5 hidden text-right sm:bottom-8 sm:right-8 sm:block">
-          <div className="hud-label">Neural lattice</div>
-          <div className="mt-2 h-px w-40 bg-holo/15">
-            <motion.div className="h-full origin-left bg-amber" animate={{ scaleX: progress }} transition={{ duration: 0.3 }} />
-          </div>
-        </div>
-
-        {/* greeting + choice */}
-        <AnimatePresence>
-          {ready && (
-            <motion.div
-              className="absolute inset-x-0 top-[48%] flex flex-col items-center px-5 text-center"
-              initial={{ opacity: 0, y: 24 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -20, filter: "blur(8px)" }}
-              transition={{ duration: 0.7, ease: [0.16, 1, 0.3, 1] }}
-            >
-              <p className="max-w-[640px] font-display text-[clamp(18px,2.4vw,28px)] font-medium leading-snug text-ice">
-                {typed}
-                <span className="animate-blink text-amber">▌</span>
-              </p>
-              <motion.div
-                className="mt-10 flex w-full max-w-[640px] flex-col gap-3 sm:flex-row"
-                initial={{ opacity: 0, y: 16 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.6, duration: 0.6 }}
-              >
-                <button
-                  type="button"
-                  autoFocus
-                  onClick={engage}
-                  data-lock="Begin the story"
-                  className="group relative flex-1 border border-amber/70 bg-amber/10 px-6 py-5 text-left transition-colors hover:bg-amber/20"
-                >
-                  <span className="brackets brackets-amber absolute inset-0" />
-                  <span className="flex items-center justify-between">
-                    <span className="font-display text-[15px] font-semibold uppercase tracking-[0.22em] text-amber">▶ Begin the story</span>
-                    <span className="font-mono text-[10px] text-amber/70">ENTER</span>
-                  </span>
-                  <span className="mt-1 block font-mono text-[11px] text-ice/60">15 chapters · 3D · motion · cinematic</span>
-                </button>
-                <button
-                  type="button"
-                  onClick={professional}
-                  data-lock="Professional mode"
-                  className="group relative flex-1 border border-holo/30 bg-holo/[0.04] px-6 py-5 text-left transition-colors hover:bg-holo/10"
-                >
-                  <span className="flex items-center justify-between">
-                    <span className="font-display text-[15px] font-semibold uppercase tracking-[0.22em] text-holo-soft">Professional mode</span>
-                    <span className="font-mono text-[10px] text-holo/60">P</span>
-                  </span>
-                  <span className="mt-1 block font-mono text-[11px] text-ice/60">Clean résumé view · one-way door</span>
-                </button>
-              </motion.div>
-            </motion.div>
-          )}
-        </AnimatePresence>
       </motion.div>
     </AnimatePresence>
   );

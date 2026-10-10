@@ -2,7 +2,7 @@
 
 import { ReactLenis, useLenis } from "lenis/react";
 import { MotionConfig } from "motion/react";
-import { useEffect, useState } from "react";
+import { Fragment, useEffect, useState, type ComponentType } from "react";
 import { sections, type SectionId } from "@/data/content";
 import { setStore, useStore } from "@/lib/store";
 import { BootSequence } from "./hud/BootSequence";
@@ -17,16 +17,27 @@ import { Building } from "./sections/Building";
 import { Projects } from "./sections/Projects";
 import { Experience } from "./sections/Experience";
 import { Stack } from "./sections/Stack";
-import { Achievements } from "./sections/Achievements";
 import { Certifications } from "./sections/Certifications";
-import { CaseStudies } from "./sections/CaseStudies";
 import { Coding } from "./sections/Coding";
-import { Education } from "./sections/Education";
 import { Writing } from "./sections/Writing";
 import { Testimonials } from "./sections/Testimonials";
-import { Resume } from "./sections/Resume";
 import { Contact } from "./sections/Contact";
 import { Footer } from "./sections/Footer";
+
+const SECTION: Record<SectionId, ComponentType> = {
+  hero: Hero,
+  about: About,
+  stack: Stack,
+  certifications: Certifications,
+  experience: Experience,
+  projects: Projects,
+  coding: Coding,
+  writing: Writing,
+  building: Building,
+  testimonials: Testimonials,
+  contact: Contact,
+  footer: Footer,
+};
 
 function LenisBridge() {
   const lenis = useLenis();
@@ -101,36 +112,16 @@ export function CinematicApp() {
         <div className="atmos" />
         <div className="atmos-grid" />
         <main id="cine-root" className="relative z-[1] origin-center">
-          <Hero />
-          <Chapter id="about" />
-          <About />
-          <Chapter id="education" />
-          <Education />
-          <Chapter id="stack" />
-          <Stack />
-          <Chapter id="certifications" />
-          <Certifications />
-          <Chapter id="experience" />
-          <Experience />
-          <Chapter id="projects" />
-          <Projects />
-          <Chapter id="cases" />
-          <CaseStudies />
-          <Chapter id="achievements" />
-          <Achievements />
-          <Chapter id="coding" />
-          <Coding />
-          <Chapter id="writing" />
-          <Writing />
-          <Chapter id="testimonials" />
-          <Testimonials />
-          <Chapter id="building" />
-          <Building />
-          <Chapter id="resume" />
-          <Resume />
-          <Chapter id="contact" />
-          <Contact />
-          <Footer />
+          {sections.map(({ id }) => {
+            const Section = SECTION[id];
+            // every chapter but the first and the last opens with a narrator card
+            return (
+              <Fragment key={id}>
+                {id !== "hero" && id !== "footer" && <Chapter id={id} />}
+                <Section />
+              </Fragment>
+            );
+          })}
         </main>
         <div data-chrome>
           <Hud />

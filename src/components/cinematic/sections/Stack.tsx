@@ -261,7 +261,7 @@ export function Stack() {
   return (
     <section id="stack" data-section="stack" className="section">
       <div className="container-hud">
-        <SectionTitle id="stack" title="Tech Stack" wordplay="One forward pass through my stack." effect="fire" />
+        <SectionTitle id="stack" title="Tech Stack" wordplay="One forward pass." effect="fire" />
         <p className="mt-6 max-w-[640px] text-[16px] leading-relaxed text-ice/70">
           Languages go in, products come out. Every tool sits in the layer where it does its work. Hover a neuron to trace its synapses.
         </p>
