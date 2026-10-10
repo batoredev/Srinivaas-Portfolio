@@ -65,7 +65,7 @@ The section order is a narrative arc. A narrator (SV-OS) opens each chapter with
 
 Waiting in the wings, shown once they have real entries: Certifications (Validation, holographic foil cards), Research & Writing (Papers, attention arcs) and Testimonials (Human feedback, voiceprint visualiser).
 
-Project holograms: Perfect Study Space (floors of live desks), Bites by Batore (a city grid where pins wait for human review inside a 2 km radius), OurGlass (an hourglass: loose conversation falls through and settles as structure), Harmony Living (a 72-unit tower), Alpenglow Global (a globe with leads arcing home).
+Project holograms: Perfect Study Space (floors of live desks), Bites by Batore (a city grid where pins wait for human review inside a 2 km radius), OurGlass (an hourglass: loose conversation falls through and settles as structure), Alpenglow Global (a globe with leads arcing home).
 
 Global chrome: target-lock reticle cursor (brackets snap to what you hover), chapter HUD with live IST clock, chapter rail, Lenis smooth scroll, synthesised sound (opt-in, no audio files), reduced-motion support.
 

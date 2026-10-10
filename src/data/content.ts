@@ -28,7 +28,7 @@ export const profile = {
     "I'm Srinivaas, founder and sole developer of Batore, a software studio based in Coimbatore. I design and build custom management systems for local businesses and ship my own consumer products, taking each one from database schema to production infrastructure. I'm also pursuing an Integrated M.Tech in CS/IT at VIT.",
   about: [
     "I'm Srinivaas, a full-stack developer and the founder of Batore, a software solutions studio in Coimbatore, Tamil Nadu. I work end to end. I talk to the business owner, model the data, build the product, and run the servers it lives on.",
-    "My most mature product is Perfect Study Space, a management platform used by around 2,000 students across multiple branches. It handles memberships, food passes, attendance, WhatsApp integration, cashback and referral analytics, with about 90 backend actions over 25+ tables. I've also built Harmony Living, a resident management system for a 72-unit apartment community, and a lead management system for Alpenglow Global, a travel agency.",
+    "My most mature product is Perfect Study Space, a management platform used by around 2,000 students across multiple branches. It handles memberships, food passes, attendance, WhatsApp integration, cashback and referral analytics, with about 90 backend actions over 25+ tables. I've also built a lead management system for Alpenglow Global, a travel agency.",
     "On the product side, I'm building Bites by Batore, a hyperlocal daily discovery app for Coimbatore on FastAPI, PostGIS, pgvector, Redis and React Native, where every extracted place goes through human review and nothing is scraped. I also built OurGlass, the studio's AI personal assistant: you talk to it naturally and it turns the conversation into commitments, people, projects and reminders, with no forms to fill.",
     "I care about owning the infrastructure as well as the code. I'm moving Batore's projects off managed Supabase onto a self-hosted VPS stack: PostgreSQL 16 with per-project schemas, Node/Express containers, MinIO, Caddy and Cloudflare Tunnel, all hardened from the ground up. I also build developer tooling around AI-assisted engineering. That includes BatoreCode, a self-hosted AI coding environment with multi-provider failover, and a 31-agent Claude Code \"operating system\" that gives every Batore project the same build, review and ship workflow.",
     "Alongside all this, I'm completing an Integrated M.Tech in CS/IT at VIT.",
@@ -102,7 +102,7 @@ export type Blueprint = {
 };
 
 export type Project = {
-  id: "pss" | "harmony" | "alpenglow" | "bites" | "ourglass";
+  id: "pss" | "alpenglow" | "bites" | "ourglass";
   name: string;
   kind: string;
   role: string;
@@ -208,18 +208,6 @@ export const projects: Project[] = [
     },
   },
   {
-    id: "harmony",
-    name: "Harmony Living",
-    kind: "Resident management system",
-    role: "Founder · sole developer",
-    headline: "One system for a 72-unit apartment community.",
-    summary:
-      "A resident management system for a 72-unit apartment community, built end to end from schema to production.",
-    highlights: ["Resident records", "Community operations", "Built schema → production"],
-    metrics: [{ value: 72, label: "apartment units" }],
-    stack: ["PostgreSQL", "Node", "React"],
-  },
-  {
     id: "alpenglow",
     name: "Alpenglow Global",
     kind: "Lead management system",
@@ -243,7 +231,7 @@ export const experience = [
       "Software solutions studio. I design, build and run custom management systems for local businesses and ship the studio's own products.",
     points: [
       "Built Perfect Study Space end to end: a multi-branch platform used by ~2,000 students, with ~90 backend actions over 25+ tables.",
-      "Delivered Harmony Living (resident management, 72-unit community) and a lead management system for Alpenglow Global (travel).",
+      "Delivered a lead management system for Alpenglow Global, a travel agency.",
       "Building Bites by Batore, a hyperlocal discovery app on FastAPI, PostGIS, pgvector, Redis and React Native.",
       "Built OurGlass, the studio's AI personal assistant: conversation in, commitments and reminders out, with a Claude → Gemini → local fallback chain.",
       "Migrating studio projects from managed Supabase to a hardened self-hosted VPS stack (PostgreSQL 16, Docker, MinIO, Caddy, Cloudflare Tunnel).",
@@ -280,7 +268,6 @@ export const commits: Commit[] = [
   { lane: 1, kind: "feat", scope: "pss", message: "memberships, food passes, attendance", detail: "Multi-branch operations for a study space.", branchStart: true },
   { lane: 1, kind: "feat", scope: "pss", message: "WhatsApp + cashback & referral analytics", detail: "~90 backend actions over 25+ tables." },
   { lane: 0, kind: "merge", message: "ship Perfect Study Space", detail: "Used by ~2,000 students across branches.", mergeFrom: 1, tag: "prod" },
-  { lane: 0, kind: "feat", scope: "harmony", message: "resident management · 72 units", detail: "Harmony Living, apartment community platform." },
   { lane: 0, kind: "feat", scope: "alpenglow", message: "lead management system", detail: "Alpenglow Global, travel agency." },
   { lane: 2, kind: "fix", scope: "cue-court", message: "revenue reporting in production", detail: "Cue Court Coffee, four-person team.", branchStart: true },
   { lane: 2, kind: "chore", scope: "cue-court", message: "production-readiness review", detail: "Full review before launch." },
@@ -312,9 +299,7 @@ export const achievements = [
   { value: 2000, prefix: "~", suffix: "", label: "students on Perfect Study Space", unit: "USERS" },
   { value: 90, prefix: "~", suffix: "", label: "backend actions in one product", unit: "ACTIONS" },
   { value: 25, prefix: "", suffix: "+", label: "tables in a production schema", unit: "TABLES" },
-  { value: 72, prefix: "", suffix: "", label: "apartment units on Harmony Living", unit: "UNITS" },
   { value: 31, prefix: "", suffix: "", label: "agents in the Claude Code workflow", unit: "AGENTS" },
-  { value: 3, prefix: "", suffix: "", label: "client systems shipped", unit: "SYSTEMS" },
 ];
 
 export const certifications = [

@@ -118,7 +118,7 @@ export function Experience() {
         {/* evaluation: the numbers that came back from production */}
         <div className="mt-14">
           <div className="hud-label mb-6">Evaluation · numbers from production</div>
-          <div className="grid grid-cols-3 gap-x-4 gap-y-8 md:grid-cols-6">
+          <div className="grid grid-cols-2 gap-x-4 gap-y-8 md:grid-cols-4">
             {achievements.map((a, i) => (
               <Gauge key={a.label} a={a} i={i} />
             ))}

@@ -95,64 +95,6 @@ function StudyModel() {
   );
 }
 
-/* ───────────── Harmony Living: 12 floors × 6 units = 72 ───────────── */
-function TowerModel() {
-  const floors = 12, perRow = 3, depth = 2;
-  const count = floors * perRow * depth;
-  const inst = useRef<THREE.InstancedMesh>(null);
-  const lit = useRef<boolean[]>(Array.from({ length: count }, (_, i) => (i * 7) % 5 < 2));
-  const acc = useRef(0);
-  const unit = useMemo(() => new THREE.BoxGeometry(0.19, 0.12, 0.19), []);
-  const unitMat = useMemo(() => new THREE.MeshBasicMaterial({ transparent: true, opacity: 0.85, blending: THREE.AdditiveBlending, depthWrite: false }), []);
-  const shell = useMemo(() => edgeLines(new THREE.BoxGeometry(0.78, 1.98, 0.54)), []);
-  const floorLines = useMemo(() => {
-    const pts: number[] = [];
-    for (let f = 0; f <= floors; f++) {
-      const y = 0.06 + f * 0.155;
-      pts.push(-0.39, y, -0.27, 0.39, y, -0.27, 0.39, y, -0.27, 0.39, y, 0.27, 0.39, y, 0.27, -0.39, y, 0.27, -0.39, y, 0.27, -0.39, y, -0.27);
-    }
-    pts.push(0, 2.05, 0, 0, 2.45, 0);
-    const g = new THREE.BufferGeometry();
-    g.setAttribute("position", new THREE.Float32BufferAttribute(pts, 3));
-    return g;
-  }, []);
-  const beacon = useRef<THREE.Mesh>(null);
-  const m = useMemo(() => new THREE.Matrix4(), []);
-  useFrame((s, d) => {
-    const mesh = inst.current;
-    if (!mesh) return;
-    acc.current += d;
-    if (acc.current > 0.12) {
-      acc.current = 0;
-      const i = Math.floor(Math.random() * count);
-      lit.current[i] = !lit.current[i];
-    }
-    let k = 0;
-    for (let f = 0; f < floors; f++)
-      for (let x = 0; x < perRow; x++)
-        for (let z = 0; z < depth; z++) {
-          m.makeTranslation(-0.24 + x * 0.24, 0.135 + f * 0.155, -0.12 + z * 0.24);
-          mesh.setMatrixAt(k, m);
-          mesh.setColorAt(k, lit.current[k] ? AMBER : DIM);
-          k++;
-        }
-    mesh.instanceMatrix.needsUpdate = true;
-    if (mesh.instanceColor) mesh.instanceColor.needsUpdate = true;
-    if (beacon.current) (beacon.current.material as THREE.MeshBasicMaterial).opacity = 0.4 + 0.6 * (Math.sin(s.clock.elapsedTime * 4) > 0 ? 1 : 0);
-  });
-  return (
-    <group>
-      <lineSegments geometry={shell} material={lineMat("#4fe3ff", 0.5)} position={[0, 1.05, 0]} />
-      <lineSegments geometry={floorLines} material={lineMat("#4fe3ff", 0.35)} />
-      <instancedMesh ref={inst} args={[unit, unitMat, count]} />
-      <mesh ref={beacon} position={[0, 2.47, 0]}>
-        <sphereGeometry args={[0.035, 12, 12]} />
-        <meshBasicMaterial color="#ffb547" transparent />
-      </mesh>
-    </group>
-  );
-}
-
 /* ───────────── Alpenglow Global: leads flying in from the world ───────────── */
 function latLon(lat: number, lon: number, r: number) {
   const phi = ((90 - lat) * Math.PI) / 180;
@@ -519,9 +461,6 @@ export function ProjectHologramScene({ active }: { active: Project["id"] }) {
       <Rig>
         <Materialize active={active === "pss"}>
           <StudyModel />
-        </Materialize>
-        <Materialize active={active === "harmony"}>
-          <TowerModel />
         </Materialize>
         <Materialize active={active === "alpenglow"}>
           <GlobeModel />
