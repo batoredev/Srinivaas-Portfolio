@@ -71,7 +71,7 @@ export function Footer() {
   return (
     <footer id="footer" data-section="footer" className="relative z-[2] overflow-hidden border-t border-holo/10 pb-10 pt-24">
       <div className="container-hud">
-        <SectionTitle id="footer" title="End of line." wordplay="Story complete. Shutting down gracefully." effect="crt" />
+        <SectionTitle id="footer" title="End of line." wordplay="Shutting down gracefully." effect="crt" />
 
         <div className="mt-12 grid grid-cols-2 gap-6 border-y border-holo/10 py-6 md:grid-cols-4">
           {stats.map(([k, v]) => (

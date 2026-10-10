@@ -1,8 +1,9 @@
 "use client";
 
 import { motion } from "motion/react";
-import { commits, experience, type Commit } from "@/data/content";
+import { achievements, commits, experience, type Commit } from "@/data/content";
 import { shortSha } from "@/lib/random";
+import { Gauge } from "../ui/Gauge";
 import { SectionTitle } from "../ui/SectionTitle";
 
 const LANE_X = [14, 38, 62];
@@ -112,9 +113,19 @@ export function Experience() {
   return (
     <section id="experience" data-section="experience" className="section">
       <div className="container-hud">
-        <SectionTitle id="experience" title="Experience" wordplay="Commit history. No force-pushes." effect="diff" />
+        <SectionTitle id="experience" title="Experience" wordplay="No force-pushes." effect="diff" />
 
-        <div className="mt-14 grid gap-10 lg:grid-cols-12 lg:gap-12">
+        {/* evaluation: the numbers that came back from production */}
+        <div className="mt-14">
+          <div className="hud-label mb-6">Evaluation · numbers from production</div>
+          <div className="grid grid-cols-3 gap-x-4 gap-y-8 md:grid-cols-6">
+            {achievements.map((a, i) => (
+              <Gauge key={a.label} a={a} i={i} />
+            ))}
+          </div>
+        </div>
+
+        <div className="mt-16 grid gap-10 lg:grid-cols-12 lg:gap-12">
           <div className="space-y-5 lg:col-span-5">
             {experience.map((job, i) => (
               <motion.article

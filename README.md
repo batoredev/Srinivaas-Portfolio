@@ -4,7 +4,7 @@ Two portfolios in one Next.js 16 app, built from a single content file.
 
 | Mode | URL | What it is |
 |------|-----|------------|
-| **Cinematic** | `/` | A 15-chapter interactive story: the lifecycle of a model named Srinivaas, told through a JARVIS-style holographic interface with WebGL, motion and optional sound. |
+| **Cinematic** | `/` | A short interactive story in chapters: the lifecycle of a model named Srinivaas, told through a JARVIS-style holographic interface with WebGL, motion and optional sound. |
 | **Professional** | `/professional` | A calm, typographic résumé for interviewers, with a two-page print/PDF layout. |
 
 Cinematic can hand a visitor to Professional. **Professional can never lead back to Cinematic** (see [The one-way door](#the-one-way-door)).
@@ -31,7 +31,7 @@ Requires Node.js 20.9+ (Node 22 recommended).
 
 Everything both modes say lives in **`src/data/content.ts`**: profile, projects, experience, the commit graph, skills, numbers, case studies, education, writing, testimonials, and the story chapters with their narrator lines.
 
-Entries marked `sample: true` are placeholders (certifications, testimonials, write-ups). They show a small **Sample** tag on screen and are **never printed** into the résumé PDF. Replace them with real entries and delete the flag.
+Entries marked `sample: true` are placeholders (certifications, testimonials, write-ups). While a section has only samples it stays hidden in both modes and never reaches the résumé PDF. Add one real entry (no `sample` flag) and its chapter appears on its own, with chapter numbers closing up around it.
 
 Contact details (email, LinkedIn, GitHub, studio link) are at the top of `profile`.
 
@@ -53,22 +53,19 @@ The section order is a narrative arc. A narrator (SV-OS) opens each chapter with
 
 | # | Chapter | Section | Signature effect | Title effect |
 |---|---------|---------|------------------|--------------|
-| 00 | Boot | Hero | Arc-reactor boot sequence, WebGL neural brain (16k-point SDF, synapse pulses, scan plane, cursor-reactive), brain regions mapped to skills | Glyph decode |
-| 01 | Identity | About Me | Projected ID hologram with a name-seeded "neural fingerprint", scroll-scrubbed statement, Talk → Model → Build → Run loop | Letters assemble from scatter |
-| 02 | Training | Education | Loss/accuracy curves drawn by scroll, checkpoints, model card with hyperparameters | Loading-bar fill |
-| 03 | Weights | Tech Stack | Live feed-forward neural network: languages in, products out, hover to trace synapses | Neurons fire letter by letter |
-| 04 | Validation | Certifications | Holographic foil cards with pointer tilt and resolving checksums | Stamp slam + "Verified" |
-| 05 | Deployment | Experience | `git log --graph` with branch lanes that draw as you scroll | Diff (– cliché / + Experience) |
-| 06 | Inference | Featured Projects | Holo-projector table: each project materialises as its own 3D model | Hologram flicker |
-| 07 | Interpretability | Case Studies | X-ray lens revealing the architecture blueprint under the product UI | Blueprint dimension lines |
-| 08 | Evaluation | Achievements | Arc-reactor gauges that power up and count | Odometer roll |
-| 09 | Open weights | GitHub / Coding | Interactive terminal (try `help`, `repos`, `sudo hire srinivaas`) + 3D activity skyline | Shell prompt |
-| 10 | Papers | Research & Writing | Transformer-style attention arcs between words | Redaction → declassified |
-| 11 | Human feedback | Testimonials | Voiceprint visualiser with streaming transcript | Waveform settle |
-| 12 | Next epoch | Currently Building | Tilted holo-screens streaming live build logs | Typewriter |
-| 13 | Model card | Resume | Laser-traced page printed by a scan head, compression report | Scan-line print |
-| 14 | Handshake | Contact | "Creation of Adam": a procedural robotic hand reaches for your cursor, an energy arc closes the gap | Signal lock |
-| 15 | Shutdown | Footer | Session stats (uptime, synapses fired, chapters completed), cursor-lit wordmark | CRT power-on |
+| 00 | Boot | Hero | Arc-reactor power-up that opens on its own, WebGL neural brain (16k-point SDF, synapse pulses, scan plane, cursor-reactive), brain regions mapped to skills | Glyph decode |
+| 01 | Identity | About Me (with Education) | Projected ID hologram with a name-seeded "neural fingerprint", scroll-scrubbed statement, Talk → Model → Build → Run loop, training card | Letters assemble from scatter |
+| 02 | Weights | Tech Stack | Live feed-forward neural network: languages in, products out, hover to trace synapses | Neurons fire letter by letter |
+| 03 | Deployment | Experience (with key numbers) | Arc-reactor gauges that power up and count, then `git log --graph` with branch lanes that draw as you scroll | Diff (– cliché / + Experience) |
+| 04 | Inference | Featured Projects (with case studies) | Holo-projector: each project materialises as its own 3D model; an X-ray lens reveals the architecture blueprint underneath | Hologram flicker |
+| 05 | Open weights | GitHub / Coding | Interactive terminal (try `help`, `repos`, `sudo hire srinivaas`) + 3D activity skyline | Shell prompt |
+| 06 | Next epoch | Currently Building | Tilted holo-screens streaming live build logs | Typewriter |
+| 07 | Handshake | Contact (with résumé) | "Creation of Adam": a procedural robotic hand reaches for your cursor, an energy arc closes the gap | Signal lock |
+| 08 | Shutdown | Footer | Session stats (uptime, synapses fired, chapters completed), cursor-lit wordmark | CRT power-on |
+
+Waiting in the wings, shown once they have real entries: Certifications (Validation, holographic foil cards), Research & Writing (Papers, attention arcs) and Testimonials (Human feedback, voiceprint visualiser).
+
+Project holograms: Perfect Study Space (floors of live desks), Bites by Batore (a city grid where pins wait for human review inside a 2 km radius), OurGlass (an hourglass: loose conversation falls through and settles as structure), Harmony Living (a 72-unit tower), Alpenglow Global (a globe with leads arcing home).
 
 Global chrome: target-lock reticle cursor (brackets snap to what you hover), chapter HUD with live IST clock, chapter rail, Lenis smooth scroll, synthesised sound (opt-in, no audio files), reduced-motion support.
 
@@ -128,11 +125,11 @@ src/
     global-not-found.tsx
   components/
     cinematic/
-      CinematicApp.tsx   story order, Lenis, HUD, boot gate
+      CinematicApp.tsx   renders the chapters in story order, Lenis, HUD, boot
       hud/               BootSequence, Hud + chapter rail, Reticle, Handoff
       sections/          one file per chapter
       three/             Stage (lazy canvas), NeuralBrain (+ worker), ProjectHologram, Skyline, RoboticHand
-      ui/                SectionTitle (16 title effects), Chapter, Counter
+      ui/                SectionTitle (title effects), Chapter, Counter, Gauge
     professional/        ProfessionalPage, PrintResume, client islands
   data/content.ts        all copy and data
   lib/                   mode lock, store, audio, hooks

@@ -3,8 +3,8 @@
  *
  * Everything the cinematic and professional sites say comes from this file.
  * Items marked `sample: true` are illustrative placeholders (certifications,
- * testimonials, write-ups). They render with a small "sample" tag until you
- * replace them with real entries and delete the flag.
+ * testimonials, write-ups). Their sections stay hidden in both modes until at
+ * least one real entry exists; add one and the chapter appears on its own.
  */
 
 export const profile = {
@@ -28,8 +28,8 @@ export const profile = {
     "I'm Srinivaas, founder and sole developer of Batore, a software studio based in Coimbatore. I design and build custom management systems for local businesses and ship my own consumer products, taking each one from database schema to production infrastructure. I'm also pursuing an Integrated M.Tech in CS/IT at VIT.",
   about: [
     "I'm Srinivaas, a full-stack developer and the founder of Batore, a software solutions studio in Coimbatore, Tamil Nadu. I work end to end. I talk to the business owner, model the data, build the product, and run the servers it lives on.",
-    "My most mature product is Perfect Study Space, a management platform used by around 2,000 students across multiple branches. It handles memberships, food passes, attendance, WhatsApp integration, cashback and referral analytics, with about 90 backend actions over 25+ tables. I've also built Harmony Living, a resident management system for a 72-unit apartment community, and a lead management system for Alpenglow Global, a travel agency. As part of a four-person team, I helped ship Cue Court Coffee, a sports facility booking app. For that project I handled production debugging of revenue reporting and a full production-readiness review.",
-    "On the product side, I'm building Bites by Batore, a hyperlocal daily discovery app for Coimbatore. It runs on FastAPI, PostGIS and pgvector, Redis, and React Native. The app follows a strict no-scraping policy, and every extracted place goes through human review.",
+    "My most mature product is Perfect Study Space, a management platform used by around 2,000 students across multiple branches. It handles memberships, food passes, attendance, WhatsApp integration, cashback and referral analytics, with about 90 backend actions over 25+ tables. I've also built Harmony Living, a resident management system for a 72-unit apartment community, and a lead management system for Alpenglow Global, a travel agency.",
+    "On the product side, I'm building Bites by Batore, a hyperlocal daily discovery app for Coimbatore on FastAPI, PostGIS, pgvector, Redis and React Native, where every extracted place goes through human review and nothing is scraped. I also built OurGlass, the studio's AI personal assistant: you talk to it naturally and it turns the conversation into commitments, people, projects and reminders, with no forms to fill.",
     "I care about owning the infrastructure as well as the code. I'm moving Batore's projects off managed Supabase onto a self-hosted VPS stack: PostgreSQL 16 with per-project schemas, Node/Express containers, MinIO, Caddy and Cloudflare Tunnel, all hardened from the ground up. I also build developer tooling around AI-assisted engineering. That includes BatoreCode, a self-hosted AI coding environment with multi-provider failover, and a 31-agent Claude Code \"operating system\" that gives every Batore project the same build, review and ship workflow.",
     "Alongside all this, I'm completing an Integrated M.Tech in CS/IT at VIT.",
   ],
@@ -52,21 +52,6 @@ export type Building = {
 };
 
 export const currentlyBuilding: Building[] = [
-  {
-    name: "Bites by Batore",
-    status: "In development",
-    summary:
-      "A hyperlocal daily discovery app for Coimbatore. Strict no-scraping policy: every extracted place goes through human review before anyone sees it.",
-    stack: ["FastAPI", "PostGIS", "pgvector", "Redis", "React Native"],
-    log: [
-      "policy.scraping ............ disabled (by design)",
-      "postgis  » spatial index on places.geom",
-      "pgvector » embedding place descriptions",
-      "review   » human approval required per place",
-      "redis    » caching today's picks",
-      "expo     » building the React Native client",
-    ],
-  },
   {
     name: "Self-hosted Batore stack",
     status: "Migration in progress",
@@ -110,8 +95,14 @@ export const currentlyBuilding: Building[] = [
   },
 ];
 
+/** Architecture drawing revealed by the X-ray lens in the cinematic Projects section. */
+export type Blueprint = {
+  nodes: { id: string; label: string; x: number; y: number }[];
+  edges: [string, string][];
+};
+
 export type Project = {
-  id: "pss" | "harmony" | "alpenglow" | "cuecourt";
+  id: "pss" | "harmony" | "alpenglow" | "bites" | "ourglass";
   name: string;
   kind: string;
   role: string;
@@ -120,6 +111,7 @@ export type Project = {
   highlights: string[];
   metrics: { value: number; prefix?: string; suffix?: string; label: string }[];
   stack: string[];
+  blueprint?: Blueprint;
 };
 
 export const projects: Project[] = [
@@ -143,6 +135,77 @@ export const projects: Project[] = [
       { value: 25, suffix: "+", label: "tables" },
     ],
     stack: ["PostgreSQL", "Node", "React", "WhatsApp API"],
+    blueprint: {
+      nodes: [
+        { id: "app", label: "Staff & student apps", x: 18, y: 22 },
+        { id: "wa", label: "WhatsApp", x: 14, y: 72 },
+        { id: "api", label: "~90 actions API", x: 46, y: 47 },
+        { id: "db", label: "Postgres · 25+ tables", x: 78, y: 24 },
+        { id: "an", label: "Referral analytics", x: 80, y: 72 },
+      ],
+      edges: [["app", "api"], ["wa", "api"], ["api", "db"], ["api", "an"], ["db", "an"]],
+    },
+  },
+  {
+    id: "bites",
+    name: "Bites by Batore",
+    kind: "Hyperlocal discovery app",
+    role: "Founder · in development",
+    headline: "Coimbatore's daily picks, checked by a human.",
+    summary:
+      "A hyperlocal daily discovery app for Coimbatore. Strict no-scraping policy: every extracted place goes through human review before anyone sees it.",
+    highlights: [
+      "No scraping, by design",
+      "Human review for every place",
+      "PostGIS geo queries and pgvector search",
+      "Redis-cached daily picks, React Native client",
+    ],
+    metrics: [
+      { value: 100, suffix: "%", label: "places human-reviewed" },
+      { value: 0, label: "scraped listings" },
+    ],
+    stack: ["FastAPI", "PostGIS", "pgvector", "Redis", "React Native"],
+    blueprint: {
+      nodes: [
+        { id: "rn", label: "React Native app", x: 16, y: 46 },
+        { id: "api", label: "FastAPI", x: 44, y: 46 },
+        { id: "rev", label: "Human review queue", x: 44, y: 82 },
+        { id: "pg", label: "PostGIS + pgvector", x: 78, y: 24 },
+        { id: "redis", label: "Redis · daily picks", x: 78, y: 70 },
+      ],
+      edges: [["rn", "api"], ["api", "pg"], ["api", "redis"], ["rev", "pg"], ["api", "rev"]],
+    },
+  },
+  {
+    id: "ourglass",
+    name: "OurGlass",
+    kind: "AI personal assistant",
+    role: "Founder · internal tool",
+    headline: "Talk naturally. It keeps track.",
+    summary:
+      "Batore's AI personal assistant. You talk to it the way you'd talk to a person, and it turns the conversation into structured commitments, people, projects and reminders, with no forms or task lists to maintain.",
+    highlights: [
+      "Conversation in, commitments and reminders out",
+      "Claude → Gemini → local Qwen fallback chain",
+      "Postgres 17 + pgvector for state and memory",
+      "Every turn can be undone; it asks instead of guessing",
+    ],
+    metrics: [
+      { value: 0, label: "forms to fill" },
+      { value: 3, label: "AI providers" },
+      { value: 99, label: "eval fixtures" },
+    ],
+    stack: ["Next.js 16", "TypeScript", "Postgres 17", "pgvector", "Claude · Gemini · Qwen"],
+    blueprint: {
+      nodes: [
+        { id: "chat", label: "Conversation", x: 14, y: 46 },
+        { id: "orc", label: "Orchestrator · tools", x: 44, y: 46 },
+        { id: "ai", label: "Claude → Gemini → Qwen", x: 44, y: 14 },
+        { id: "db", label: "Postgres + pgvector", x: 80, y: 30 },
+        { id: "rem", label: "Reminder poller", x: 78, y: 76 },
+      ],
+      edges: [["chat", "orc"], ["orc", "ai"], ["orc", "db"], ["db", "rem"], ["rem", "chat"]],
+    },
   },
   {
     id: "harmony",
@@ -168,22 +231,6 @@ export const projects: Project[] = [
     metrics: [{ value: 1, label: "travel agency" }],
     stack: ["PostgreSQL", "Node", "React"],
   },
-  {
-    id: "cuecourt",
-    name: "Cue Court Coffee",
-    kind: "Sports facility booking app",
-    role: "Engineer · four-person team",
-    headline: "Bookings for a sports facility, production-ready.",
-    summary:
-      "A sports facility booking app shipped by a four-person team. I handled production debugging of revenue reporting and a full production-readiness review.",
-    highlights: [
-      "Production debugging of revenue reporting",
-      "Full production-readiness review",
-      "Shipped with a team of four",
-    ],
-    metrics: [{ value: 4, label: "person team" }],
-    stack: ["Bookings", "Revenue reporting", "Production review"],
-  },
 ];
 
 export const experience = [
@@ -198,6 +245,7 @@ export const experience = [
       "Built Perfect Study Space end to end: a multi-branch platform used by ~2,000 students, with ~90 backend actions over 25+ tables.",
       "Delivered Harmony Living (resident management, 72-unit community) and a lead management system for Alpenglow Global (travel).",
       "Building Bites by Batore, a hyperlocal discovery app on FastAPI, PostGIS, pgvector, Redis and React Native.",
+      "Built OurGlass, the studio's AI personal assistant: conversation in, commitments and reminders out, with a Claude → Gemini → local fallback chain.",
       "Migrating studio projects from managed Supabase to a hardened self-hosted VPS stack (PostgreSQL 16, Docker, MinIO, Caddy, Cloudflare Tunnel).",
       "Built BatoreCode, a self-hosted AI coding environment with multi-provider failover, and a 31-agent Claude Code workflow.",
     ],
@@ -238,6 +286,7 @@ export const commits: Commit[] = [
   { lane: 2, kind: "chore", scope: "cue-court", message: "production-readiness review", detail: "Full review before launch." },
   { lane: 0, kind: "merge", message: "ship Cue Court Coffee", detail: "Sports facility booking app.", mergeFrom: 2 },
   { lane: 0, kind: "refactor", scope: "infra", message: "managed Supabase → self-hosted VPS", detail: "PostgreSQL 16, per-project schemas, Caddy, Cloudflare Tunnel." },
+  { lane: 0, kind: "feat", scope: "ourglass", message: "AI personal assistant", detail: "OurGlass: talk naturally, it keeps track." },
   { lane: 0, kind: "wip", scope: "bites", message: "hyperlocal discovery for Coimbatore", detail: "Bites by Batore, in development.", tag: "HEAD" },
 ];
 
@@ -265,114 +314,13 @@ export const achievements = [
   { value: 25, prefix: "", suffix: "+", label: "tables in a production schema", unit: "TABLES" },
   { value: 72, prefix: "", suffix: "", label: "apartment units on Harmony Living", unit: "UNITS" },
   { value: 31, prefix: "", suffix: "", label: "agents in the Claude Code workflow", unit: "AGENTS" },
-  { value: 4, prefix: "", suffix: "", label: "production systems shipped", unit: "SYSTEMS" },
+  { value: 3, prefix: "", suffix: "", label: "client systems shipped", unit: "SYSTEMS" },
 ];
 
 export const certifications = [
   { name: "Database Management Systems", issuer: "NPTEL", year: "—", sample: true },
   { name: "Docker & Containers Fundamentals", issuer: "Add issuer", year: "—", sample: true },
   { name: "Cloud / DevOps certification", issuer: "Add issuer", year: "—", sample: true },
-];
-
-export type CaseStudy = {
-  id: string;
-  title: string;
-  status: string;
-  problem: string;
-  approach: string[];
-  outcome: string;
-  surface: { label: string; value: string }[];
-  blueprint: { nodes: { id: string; label: string; x: number; y: number }[]; edges: [string, string][] };
-};
-
-export const caseStudies: CaseStudy[] = [
-  {
-    id: "pss",
-    title: "Perfect Study Space",
-    status: "In production",
-    problem:
-      "A study space with multiple branches was running memberships, food, attendance and referrals across disconnected tools, so staff and owners never had one view of the business.",
-    approach: [
-      "Sat with the owner to map how each branch actually runs.",
-      "Modelled it as 25+ tables with about 90 backend actions.",
-      "Integrated WhatsApp and built cashback and referral analytics into the same console.",
-    ],
-    outcome: "One platform, used by around 2,000 students across branches.",
-    surface: [
-      { label: "Students", value: "~2,000" },
-      { label: "Backend actions", value: "~90" },
-      { label: "Tables", value: "25+" },
-      { label: "Branches", value: "Multi" },
-    ],
-    blueprint: {
-      nodes: [
-        { id: "app", label: "Staff & student apps", x: 12, y: 22 },
-        { id: "wa", label: "WhatsApp", x: 12, y: 72 },
-        { id: "api", label: "~90 actions API", x: 44, y: 46 },
-        { id: "db", label: "Postgres · 25+ tables", x: 78, y: 24 },
-        { id: "an", label: "Cashback & referral analytics", x: 78, y: 74 },
-      ],
-      edges: [["app", "api"], ["wa", "api"], ["api", "db"], ["api", "an"], ["db", "an"]],
-    },
-  },
-  {
-    id: "bites",
-    title: "Bites by Batore",
-    status: "In development",
-    problem:
-      "Local discovery in Coimbatore is noisy, and the usual shortcut, scraping the open web, produces stale and untrustworthy listings.",
-    approach: [
-      "A strict no-scraping policy from day one.",
-      "Every extracted place goes through human review before it is published.",
-      "FastAPI with PostGIS for geo queries, pgvector for semantic search and Redis for daily picks, with a React Native client.",
-    ],
-    outcome: "In development, designed for trust first and scale second.",
-    surface: [
-      { label: "Scraping", value: "None" },
-      { label: "Human review", value: "Every place" },
-      { label: "Geo", value: "PostGIS" },
-      { label: "Search", value: "pgvector" },
-    ],
-    blueprint: {
-      nodes: [
-        { id: "rn", label: "React Native app", x: 12, y: 46 },
-        { id: "api", label: "FastAPI", x: 40, y: 46 },
-        { id: "rev", label: "Human review queue", x: 40, y: 82 },
-        { id: "pg", label: "PostGIS + pgvector", x: 76, y: 24 },
-        { id: "redis", label: "Redis · daily picks", x: 76, y: 70 },
-      ],
-      edges: [["rn", "api"], ["api", "pg"], ["api", "redis"], ["rev", "pg"], ["api", "rev"]],
-    },
-  },
-  {
-    id: "infra",
-    title: "Owning the infrastructure",
-    status: "Migration in progress",
-    problem:
-      "Managed backends are quick to start with, but they cost control and create lock-in once several client products depend on them.",
-    approach: [
-      "One PostgreSQL 16 cluster with a schema per project.",
-      "Node/Express services in containers, MinIO for object storage.",
-      "Caddy for TLS and Cloudflare Tunnel so no inbound ports are open. Hardened from the ground up.",
-    ],
-    outcome: "In progress: moving Batore's projects off managed Supabase, one schema at a time.",
-    surface: [
-      { label: "Postgres", value: "16" },
-      { label: "Schemas", value: "Per project" },
-      { label: "Open ports", value: "0 inbound" },
-      { label: "TLS", value: "Caddy" },
-    ],
-    blueprint: {
-      nodes: [
-        { id: "cf", label: "Cloudflare Tunnel", x: 10, y: 46 },
-        { id: "caddy", label: "Caddy", x: 34, y: 46 },
-        { id: "api", label: "Node/Express containers", x: 60, y: 22 },
-        { id: "minio", label: "MinIO", x: 60, y: 76 },
-        { id: "pg", label: "Postgres 16 · schema/project", x: 86, y: 46 },
-      ],
-      edges: [["cf", "caddy"], ["caddy", "api"], ["caddy", "minio"], ["api", "pg"], ["api", "minio"]],
-    },
-  },
 ];
 
 export const coding = {
@@ -447,55 +395,53 @@ export const testimonials = [
   },
   {
     quote:
-      "A third, shorter line works well here, for example from someone at Cue Court Coffee about the production-readiness review.",
+      "A third, shorter line works well here, for example from a teammate about reliability or a production-readiness review.",
     name: "Collaborator",
-    role: "Cue Court Coffee",
+    role: "Teammate",
     sample: true,
   },
 ];
+
+const hasReal = (items: readonly { sample?: boolean }[]) => items.some((i) => !i.sample);
 
 /**
  * The cinematic mode is told as a story: the lifecycle of a model named
  * Srinivaas, from boot to shutdown. Order here is the order on screen; each
  * chapter opens with a narrator line (typed, and spoken if sound is on).
+ * Chapters with a `when` condition only appear once they have a real
+ * (non-sample) entry, and chapter numbers close up around them.
  */
-export const sections = [
-  { id: "hero", label: "Hero", code: "00", chapter: "Boot", narration: "" },
-  { id: "about", label: "About Me", code: "01", chapter: "Identity", narration: "Subject located. Before the systems, meet the person who builds them." },
-  { id: "education", label: "Education", code: "02", chapter: "Training", narration: "Every model starts with training. This one is still running." },
-  { id: "stack", label: "Tech Stack", code: "03", chapter: "Weights", narration: "Training leaves weights behind. These are the ones he reaches for." },
-  { id: "certifications", label: "Certifications", code: "04", chapter: "Validation", narration: "Weights need checking. Here is what gets verified." },
-  { id: "experience", label: "Experience", code: "05", chapter: "Deployment", narration: "Then came production, where software meets real businesses." },
-  { id: "projects", label: "Featured Projects", code: "06", chapter: "Inference", narration: "In production, a model is judged by its outputs. These are his." },
-  { id: "cases", label: "Case Studies", code: "07", chapter: "Interpretability", narration: "Outputs are easy to show. Here is how the decisions were made." },
-  { id: "achievements", label: "Achievements", code: "08", chapter: "Evaluation", narration: "Every run ends with an evaluation. These numbers came back from production." },
-  { id: "coding", label: "GitHub / Coding", code: "09", chapter: "Open weights", narration: "Don't take the model's word for it. Read the source." },
-  { id: "writing", label: "Research & Writing", code: "10", chapter: "Papers", narration: "Some of the work is thinking out loud." },
-  { id: "testimonials", label: "Testimonials", code: "11", chapter: "Human feedback", narration: "The strongest signal still comes from the humans in the loop." },
-  { id: "building", label: "Currently Building", code: "12", chapter: "Next epoch", narration: "Training never really ends. This is what is running right now." },
-  { id: "resume", label: "Resume", code: "13", chapter: "Model card", narration: "Everything so far, compressed into one page." },
-  { id: "contact", label: "Contact", code: "14", chapter: "Handshake", narration: "Your turn. Send a prompt." },
-  { id: "footer", label: "Footer", code: "15", chapter: "Shutdown", narration: "" },
+const storyline = [
+  { id: "hero", label: "Hero", chapter: "Boot", narration: "" },
+  { id: "about", label: "About Me", chapter: "Identity", narration: "Meet the person behind the systems." },
+  { id: "stack", label: "Tech Stack", chapter: "Weights", narration: "The tools he reaches for." },
+  { id: "certifications", label: "Certifications", chapter: "Validation", narration: "Weights need checking.", when: hasReal(certifications) },
+  { id: "experience", label: "Experience", chapter: "Deployment", narration: "Then came production." },
+  { id: "projects", label: "Featured Projects", chapter: "Inference", narration: "Judge a model by its outputs." },
+  { id: "coding", label: "GitHub / Coding", chapter: "Open weights", narration: "Don't trust it. Read the source." },
+  { id: "writing", label: "Research & Writing", chapter: "Papers", narration: "Some of the work is thinking out loud.", when: hasReal(writing) },
+  { id: "building", label: "Currently Building", chapter: "Next epoch", narration: "Training never ends. Here's what's running." },
+  { id: "testimonials", label: "Testimonials", chapter: "Human feedback", narration: "The humans in the loop.", when: hasReal(testimonials) },
+  { id: "contact", label: "Contact", chapter: "Handshake", narration: "Your turn. Send a prompt." },
+  { id: "footer", label: "Footer", chapter: "Shutdown", narration: "" },
 ] as const;
 
-export type SectionId = (typeof sections)[number]["id"];
+export type SectionId = (typeof storyline)[number]["id"];
 
-export const sectionMeta = (id: SectionId) => sections.find((s) => s.id === id)!;
+export type Section = { id: SectionId; label: string; chapter: string; narration: string; code: string };
+
+export const sections: Section[] = storyline
+  .filter((s) => !("when" in s) || s.when)
+  .map((s, i) => ({ id: s.id, label: s.label, chapter: s.chapter, narration: s.narration, code: String(i).padStart(2, "0") }));
+
+const fallback = (id: SectionId): Section => {
+  const s = storyline.find((x) => x.id === id)!;
+  return { id: s.id, label: s.label, chapter: s.chapter, narration: s.narration, code: "--" };
+};
+
+export const sectionMeta = (id: SectionId) => sections.find((s) => s.id === id) ?? fallback(id);
 
 /** Recruiter-friendly order for the professional résumé. */
-export const professionalOrder: SectionId[] = [
-  "about",
-  "experience",
-  "projects",
-  "building",
-  "stack",
-  "achievements",
-  "cases",
-  "education",
-  "certifications",
-  "coding",
-  "writing",
-  "testimonials",
-  "resume",
-  "contact",
-];
+export const professionalOrder: SectionId[] = (
+  ["about", "experience", "projects", "building", "stack", "certifications", "coding", "writing", "testimonials", "contact"] as const
+).filter((id) => sections.some((s) => s.id === id));

@@ -158,7 +158,7 @@ export function Coding() {
   return (
     <section id="coding" data-section="coding" className="section">
       <div className="container-hud">
-        <SectionTitle id="coding" title="GitHub / Coding" wordplay="Talk is cheap. Here's the diff." effect="prompt" />
+        <SectionTitle id="coding" title="GitHub / Coding" wordplay="Read the diff." effect="prompt" />
         <p className="mt-6 max-w-[680px] text-[16px] leading-relaxed text-ice/70">{coding.summary}</p>
 
         <div ref={ref} className="mt-12 grid gap-6 lg:grid-cols-2">

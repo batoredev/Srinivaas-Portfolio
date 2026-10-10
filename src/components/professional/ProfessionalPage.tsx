@@ -1,7 +1,5 @@
 import { Fragment, type ReactNode } from "react";
 import {
-  achievements,
-  caseStudies,
   certifications,
   coding,
   currentlyBuilding,
@@ -27,7 +25,8 @@ import { PrintResume } from "./PrintResume";
 const LABEL: Partial<Record<SectionId, string>> = {
   about: "About",
   stack: "Skills",
-  achievements: "Key numbers",
+  coding: "GitHub",
+  contact: "Contact & Résumé",
 };
 const label = (id: SectionId) => LABEL[id] ?? sectionMeta(id).label;
 
@@ -142,6 +141,21 @@ const SECTIONS: Record<SectionId, () => ReactNode> = {
           <p key={p.slice(0, 24)}>{p}</p>
         ))}
       </div>
+      <h3 className="mt-8 text-[12px] font-semibold uppercase tracking-wider text-muted">
+        Education
+      </h3>
+      {education.map((e) => (
+        <article
+          key={e.school}
+          className="mt-2 flex flex-col gap-1 sm:flex-row sm:items-baseline sm:justify-between"
+        >
+          <div>
+            <p className="text-[16px] font-semibold text-ink">{e.program}</p>
+            <p className="text-[15px] text-body">{e.school}</p>
+          </div>
+          <span className="shrink-0 text-[13px] text-muted">{e.period}</span>
+        </article>
+      ))}
     </Section>
   ),
 
@@ -245,75 +259,6 @@ const SECTIONS: Record<SectionId, () => ReactNode> = {
           </div>
         ))}
       </dl>
-    </Section>
-  ),
-
-  achievements: () => (
-    <Section id="achievements">
-      <dl className="grid grid-cols-2 gap-px overflow-hidden rounded-lg border border-rule bg-rule sm:grid-cols-3">
-        {achievements.map((a) => (
-          <div
-            key={a.label}
-            className="flex flex-col-reverse justify-end bg-card p-5"
-          >
-            <dt className="mt-1.5 text-[13px] leading-snug text-muted">
-              {a.label}
-            </dt>
-            <dd className="font-serif text-[30px] font-semibold leading-none text-ink">
-              {a.prefix}
-              {a.value.toLocaleString("en-IN")}
-              {a.suffix}
-            </dd>
-          </div>
-        ))}
-      </dl>
-    </Section>
-  ),
-
-  cases: () => (
-    <Section id="cases">
-      <div className="space-y-8">
-        {caseStudies.map((c) => (
-          <article key={c.id} className="avoid-break">
-            <div className="flex flex-wrap items-baseline gap-x-3">
-              <h3 className="text-[17px] font-semibold text-ink">{c.title}</h3>
-              <span className="text-[13px] text-muted">{c.status}</span>
-            </div>
-            <dl className="mt-3 grid gap-3 text-[15px] leading-relaxed sm:grid-cols-[110px_1fr]">
-              <dt className="font-medium text-muted">Problem</dt>
-              <dd className="text-body">{c.problem}</dd>
-              <dt className="font-medium text-muted">Approach</dt>
-              <dd className="text-body">
-                <ol className="list-decimal space-y-1 pl-5 marker:text-muted">
-                  {c.approach.map((a) => (
-                    <li key={a}>{a}</li>
-                  ))}
-                </ol>
-              </dd>
-              <dt className="font-medium text-muted">Outcome</dt>
-              <dd className="font-medium text-ink">{c.outcome}</dd>
-            </dl>
-          </article>
-        ))}
-      </div>
-    </Section>
-  ),
-
-  education: () => (
-    <Section id="education">
-      {education.map((e) => (
-        <article
-          key={e.school}
-          className="flex flex-col gap-1 sm:flex-row sm:items-baseline sm:justify-between"
-        >
-          <div>
-            <h3 className="text-[17px] font-semibold text-ink">{e.program}</h3>
-            <p className="text-[15px] text-body">{e.school}</p>
-            <p className="mt-1 text-[14px] text-muted">{e.note}</p>
-          </div>
-          <span className="shrink-0 text-[13px] text-muted">{e.period}</span>
-        </article>
-      ))}
     </Section>
   ),
 
@@ -428,23 +373,6 @@ const SECTIONS: Record<SectionId, () => ReactNode> = {
     </Section>
   ),
 
-  resume: () => (
-    <Section id="resume">
-      <div className="no-print flex flex-col gap-5 rounded-lg border border-rule bg-card p-6 sm:flex-row sm:items-center sm:justify-between">
-        <div>
-          <p className="text-[15.5px] font-medium text-ink">
-            This page is the résumé.
-          </p>
-          <p className="mt-1 text-[14px] text-muted">
-            Download the PDF or print this page: both give a clean two-page
-            résumé.
-          </p>
-        </div>
-        <Actions compact />
-      </div>
-    </Section>
-  ),
-
   contact: () => (
     <Section id="contact">
       <p className="text-[15.5px] leading-relaxed text-body">
@@ -478,6 +406,18 @@ const SECTIONS: Record<SectionId, () => ReactNode> = {
           </li>
         ))}
       </ul>
+      <div className="no-print mt-5 flex flex-col gap-5 rounded-lg border border-rule bg-card p-6 sm:flex-row sm:items-center sm:justify-between">
+        <div>
+          <p className="text-[15.5px] font-medium text-ink">
+            This page is the résumé.
+          </p>
+          <p className="mt-1 text-[14px] text-muted">
+            Download the PDF or print this page: both give a clean two-page
+            résumé.
+          </p>
+        </div>
+        <Actions compact />
+      </div>
     </Section>
   ),
 };
@@ -502,7 +442,7 @@ export function ProfessionalPage() {
           </div>
           <div className="space-y-4">
             <Actions />
-            <p className="text-[12px] text-muted">Updated September 2026</p>
+            <p className="text-[12px] text-muted">Updated October 2026</p>
           </div>
         </aside>
 
@@ -549,7 +489,7 @@ export function ProfessionalPage() {
               © {new Date().getFullYear()} {profile.name} · {profile.city},
               India
             </span>
-            <span>Updated September 2026</span>
+            <span>Updated October 2026</span>
           </footer>
         </main>
       </div>

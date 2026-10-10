@@ -261,85 +261,241 @@ function GlobeModel() {
   );
 }
 
-/* ───────────── Cue Court Coffee: court, rally, revenue, coffee ───────────── */
-function CourtModel() {
-  const ball = useRef<THREE.Mesh>(null);
-  const bars = useRef<THREE.Group>(null);
-  const steam = useRef<THREE.Points>(null);
-  const court = useMemo(() => {
-    const W = 1.9, D = 1.0, pts: number[] = [];
-    const rect = (x0: number, z0: number, x1: number, z1: number) => pts.push(x0, 0, z0, x1, 0, z0, x1, 0, z0, x1, 0, z1, x1, 0, z1, x0, 0, z1, x0, 0, z1, x0, 0, z0);
-    rect(-W / 2, -D / 2, W / 2, D / 2);
-    rect(-W / 2 + 0.1, -D / 2 + 0.1, W / 2 - 0.1, D / 2 - 0.1);
-    pts.push(-0.45, 0, -D / 2 + 0.1, -0.45, 0, D / 2 - 0.1, 0.45, 0, -D / 2 + 0.1, 0.45, 0, D / 2 - 0.1);
-    pts.push(-W / 2 + 0.1, 0, 0, -0.45, 0, 0, 0.45, 0, 0, W / 2 - 0.1, 0, 0);
-    // net
-    for (let i = 0; i <= 8; i++) {
-      const z = -D / 2 + (i / 8) * D;
-      pts.push(0, 0, z, 0, 0.26, z);
-    }
-    pts.push(0, 0.26, -D / 2, 0, 0.26, D / 2, 0, 0.13, -D / 2, 0, 0.13, D / 2);
+/* ───────────── Bites by Batore: a city grid, pins awaiting human review ───────────── */
+function BitesModel() {
+  const PINS = 16;
+  const pins = useMemo(() => {
+    const r = mulberry32(42);
+    return Array.from({ length: PINS }, () => {
+      const a = r() * Math.PI * 2;
+      const d = 0.18 + Math.sqrt(r()) * 0.86;
+      return { x: Math.cos(a) * d, z: Math.sin(a) * d * 0.8, h: 0.22 + r() * 0.32 };
+    });
+  }, []);
+  const ground = useMemo(() => {
+    const pts: number[] = [];
+    const W = 1.15, step = 0.23;
+    for (let v = -W; v <= W + 1e-6; v += step) pts.push(-W, 0, v, W, 0, v, v, 0, -W, v, 0, W);
+    // a couple of arterial roads
+    pts.push(-W, 0.002, -0.62, W, 0.002, 0.48, -0.4, 0.002, -W, 0.22, 0.002, W);
     const g = new THREE.BufferGeometry();
     g.setAttribute("position", new THREE.Float32BufferAttribute(pts, 3));
     return g;
   }, []);
-  const cup = useMemo(() => {
-    const prof = [new THREE.Vector2(0.0, 0), new THREE.Vector2(0.09, 0), new THREE.Vector2(0.11, 0.02), new THREE.Vector2(0.13, 0.2), new THREE.Vector2(0.135, 0.22)];
-    return new THREE.WireframeGeometry(new THREE.LatheGeometry(prof, 14));
-  }, []);
-  const steamGeo = useMemo(() => {
-    const arr = new Float32Array(40 * 3);
+  const stems = useMemo(() => {
+    const pts: number[] = [];
+    for (const p of pins) pts.push(p.x, 0, p.z, p.x, p.h, p.z);
     const g = new THREE.BufferGeometry();
-    g.setAttribute("position", new THREE.BufferAttribute(arr, 3));
+    g.setAttribute("position", new THREE.Float32BufferAttribute(pts, 3));
+    return g;
+  }, [pins]);
+  const ring = useMemo(() => {
+    const pts: number[] = [];
+    for (let i = 0; i < 96; i++) {
+      const a0 = (i / 96) * Math.PI * 2, a1 = ((i + 1) / 96) * Math.PI * 2;
+      pts.push(Math.cos(a0), 0, Math.sin(a0), Math.cos(a1), 0, Math.sin(a1));
+    }
+    const g = new THREE.BufferGeometry();
+    g.setAttribute("position", new THREE.Float32BufferAttribute(pts, 3));
     return g;
   }, []);
-  const barGeo = useMemo(() => new THREE.BoxGeometry(0.12, 1, 0.12), []);
-  const barEdges = useMemo(() => edgeLines(barGeo), [barGeo]);
-  const values = useMemo(() => [0.35, 0.5, 0.42, 0.62, 0.55, 0.88, 0.96], []);
+  const head = useMemo(() => new THREE.OctahedronGeometry(0.045, 0), []);
+  const headMat = useMemo(() => new THREE.MeshBasicMaterial({ transparent: true, opacity: 0.95, blending: THREE.AdditiveBlending, depthWrite: false }), []);
+  const ringMat = useMemo(() => lineMat("#ffb547", 0.6), []);
+  const inst = useRef<THREE.InstancedMesh>(null);
+  const scan = useRef<THREE.LineSegments>(null);
+  const radius = useRef<THREE.LineSegments>(null);
+  const beam = useRef<THREE.Mesh>(null);
+  const approved = useRef<boolean[]>(pins.map((_, i) => i % 4 === 0));
+  const reviewing = useRef(1);
+  const acc = useRef(0);
+  const m = useMemo(() => new THREE.Matrix4(), []);
+  const q = useMemo(() => new THREE.Quaternion(), []);
+  const one = useMemo(() => new THREE.Vector3(1, 1, 1), []);
+  const pos = useMemo(() => new THREE.Vector3(), []);
+  const PENDING = useMemo(() => new THREE.Color("#2a8fa8"), []);
 
-  useFrame((s) => {
+  useFrame((s, d) => {
     const t = s.clock.elapsedTime;
-    if (ball.current) {
-      const p = (t * 0.55) % 1;
-      const dir = Math.floor(t * 0.55) % 2 === 0 ? 1 : -1;
-      const x = dir * (-0.75 + p * 1.5);
-      ball.current.position.set(x, 0.05 + Math.sin(p * Math.PI) * 0.62, Math.sin(t * 0.9) * 0.28);
+    acc.current += d;
+    if (acc.current > 0.7) {
+      // a reviewer approves the current place, then moves to the next pending one
+      acc.current = 0;
+      approved.current[reviewing.current] = true;
+      const next = approved.current.findIndex((a, i) => !a && i !== reviewing.current);
+      if (next === -1) approved.current = pins.map((_, i) => i % 4 === 0);
+      reviewing.current = next === -1 ? 1 : next;
     }
-    if (bars.current)
-      bars.current.children.forEach((c, i) => {
-        const h = values[i] * (0.75 + 0.25 * Math.sin(t * 0.8 + i));
-        c.scale.y = h;
-        c.position.y = h / 2;
+    const mesh = inst.current;
+    if (mesh) {
+      pins.forEach((p, i) => {
+        const bob = i === reviewing.current ? Math.sin(t * 8) * 0.02 : 0;
+        q.setFromAxisAngle(THREE.Object3D.DEFAULT_UP, t * 1.4 + i);
+        m.compose(pos.set(p.x, p.h + 0.045 + bob, p.z), q, one);
+        mesh.setMatrixAt(i, m);
+        mesh.setColorAt(i, approved.current[i] ? AMBER : PENDING);
       });
-    if (steam.current) {
-      const a = steam.current.geometry.attributes.position as THREE.BufferAttribute;
-      for (let i = 0; i < a.count; i++) {
-        const life = (t * 0.35 + i / a.count) % 1;
-        a.setXYZ(i, Math.sin(life * 9 + i) * 0.04, 0.24 + life * 0.45, Math.cos(life * 7 + i) * 0.04);
-      }
-      a.needsUpdate = true;
+      mesh.instanceMatrix.needsUpdate = true;
+      if (mesh.instanceColor) mesh.instanceColor.needsUpdate = true;
     }
+    const p = pins[reviewing.current];
+    if (beam.current) {
+      beam.current.position.set(p.x, 0.5, p.z);
+      (beam.current.material as THREE.MeshBasicMaterial).opacity = 0.35 + 0.25 * Math.sin(t * 10);
+    }
+    if (scan.current) {
+      const k = (t * 0.4) % 1;
+      scan.current.scale.setScalar(0.1 + k * 1.05);
+      (scan.current.material as THREE.LineBasicMaterial).opacity = 0.7 * (1 - k);
+    }
+    if (radius.current) radius.current.rotation.y = t * 0.15;
   });
 
   return (
-    <group position={[0, 0.25, 0]} rotation={[0, 0.2, 0]}>
-      <lineSegments geometry={court} material={lineMat("#4fe3ff", 0.8)} />
-      <mesh ref={ball}>
-        <sphereGeometry args={[0.045, 16, 16]} />
+    <group position={[0, 0.35, 0]} rotation={[0.18, 0, 0]}>
+      <lineSegments geometry={ground} material={lineMat("#4fe3ff", 0.18)} />
+      {/* "within 2 km" search radius and a sonar sweep */}
+      <lineSegments ref={radius} geometry={ring} material={ringMat} scale={[0.72, 1, 0.72]} />
+      <lineSegments ref={scan} geometry={ring} material={lineMat("#9ef3ff", 0.6)} />
+      <lineSegments geometry={stems} material={lineMat("#9ef3ff", 0.45)} />
+      <instancedMesh ref={inst} args={[head, headMat, PINS]} />
+      {/* the place under human review */}
+      <mesh ref={beam}>
+        <cylinderGeometry args={[0.012, 0.012, 1, 6, 1, true]} />
+        <meshBasicMaterial color="#ffb547" transparent blending={THREE.AdditiveBlending} depthWrite={false} />
+      </mesh>
+      {/* you are here */}
+      <mesh position={[0, 0.06, 0]}>
+        <coneGeometry args={[0.05, 0.12, 4]} />
         <meshBasicMaterial color="#ffb547" />
       </mesh>
-      <group ref={bars} position={[-0.72, 0, -0.78]}>
-        {values.map((_, i) => (
-          <group key={i} position={[i * 0.24, 0, 0]}>
-            <lineSegments geometry={barEdges} material={lineMat(i === values.length - 1 ? "#ffb547" : "#4fe3ff", 0.75)} />
-          </group>
+    </group>
+  );
+}
+
+/* ───────────── OurGlass: loose conversation falls through, structure collects ───────────── */
+const NECK_Y = 1.05;
+const GLASS_H = 2.1;
+const glassRadius = (y: number) => {
+  const u = Math.min(1, Math.abs(y - NECK_Y) / NECK_Y);
+  return 0.05 + 0.55 * Math.pow(Math.sin((u * Math.PI) / 2), 0.9);
+};
+
+function HourglassModel() {
+  const SAND = 700;
+  const glass = useMemo(() => {
+    const pts: number[] = [];
+    const steps = 40;
+    // meridians
+    for (let k = 0; k < 12; k++) {
+      const a = (k / 12) * Math.PI * 2;
+      for (let i = 0; i < steps; i++) {
+        const y0 = (i / steps) * GLASS_H, y1 = ((i + 1) / steps) * GLASS_H;
+        const r0 = glassRadius(y0), r1 = glassRadius(y1);
+        pts.push(Math.cos(a) * r0, y0, Math.sin(a) * r0, Math.cos(a) * r1, y1, Math.sin(a) * r1);
+      }
+    }
+    // rings
+    for (const y of [0.12, 0.4, 0.75, 1.35, 1.7, 1.98]) {
+      const r = glassRadius(y);
+      for (let i = 0; i < 48; i++) {
+        const a0 = (i / 48) * Math.PI * 2, a1 = ((i + 1) / 48) * Math.PI * 2;
+        pts.push(Math.cos(a0) * r, y, Math.sin(a0) * r, Math.cos(a1) * r, y, Math.sin(a1) * r);
+      }
+    }
+    const g = new THREE.BufferGeometry();
+    g.setAttribute("position", new THREE.Float32BufferAttribute(pts, 3));
+    return g;
+  }, []);
+  const frame = useMemo(() => {
+    const pts: number[] = [];
+    for (const y of [-0.04, GLASS_H + 0.04])
+      for (let i = 0; i < 64; i++) {
+        const a0 = (i / 64) * Math.PI * 2, a1 = ((i + 1) / 64) * Math.PI * 2;
+        pts.push(Math.cos(a0) * 0.74, y, Math.sin(a0) * 0.74, Math.cos(a1) * 0.74, y, Math.sin(a1) * 0.74);
+      }
+    for (let k = 0; k < 3; k++) {
+      const a = (k / 3) * Math.PI * 2 + 0.5;
+      pts.push(Math.cos(a) * 0.74, -0.04, Math.sin(a) * 0.74, Math.cos(a) * 0.74, GLASS_H + 0.04, Math.sin(a) * 0.74);
+    }
+    const g = new THREE.BufferGeometry();
+    g.setAttribute("position", new THREE.Float32BufferAttribute(pts, 3));
+    return g;
+  }, []);
+  const sand = useMemo(() => {
+    const r = mulberry32(5);
+    const seeds = Array.from({ length: SAND }, () => [r(), r(), r()] as const);
+    const g = new THREE.BufferGeometry();
+    g.setAttribute("position", new THREE.BufferAttribute(new Float32Array(SAND * 3), 3));
+    g.setAttribute("color", new THREE.BufferAttribute(new Float32Array(SAND * 3), 3));
+    return { g, seeds };
+  }, []);
+  const cards = useRef<THREE.Group>(null);
+  const card = useMemo(() => edgeLines(new THREE.PlaneGeometry(0.3, 0.18)), []);
+  const CYAN = useMemo(() => new THREE.Color("#4fe3ff"), []);
+  const tmp = useMemo(() => new THREE.Color(), []);
+
+  useFrame((s) => {
+    const t = s.clock.elapsedTime;
+    const pa = sand.g.attributes.position as THREE.BufferAttribute;
+    const ca = sand.g.attributes.color as THREE.BufferAttribute;
+    for (let i = 0; i < SAND; i++) {
+      const [a, b, c] = sand.seeds[i];
+      const ph = (t * 0.07 + a) % 1;
+      const ang = b * Math.PI * 2 + t * 0.2;
+      let x, y, z, mix;
+      if (ph < 0.5) {
+        // drifting loosely in the top bulb, funnelling toward the neck
+        const k = ph / 0.5;
+        y = 1.95 - (1.95 - NECK_Y - 0.05) * Math.pow(k, 1.6) - c * 0.25 * (1 - k);
+        const rr = glassRadius(y) * 0.85 * Math.sqrt(c) * (1 - k * 0.8);
+        x = Math.cos(ang) * rr;
+        z = Math.sin(ang) * rr;
+        mix = 0;
+      } else if (ph < 0.58) {
+        // the stream through the neck
+        const k = (ph - 0.5) / 0.08;
+        y = NECK_Y - k * 0.8;
+        x = (c - 0.5) * 0.03;
+        z = (b - 0.5) * 0.03;
+        mix = k;
+      } else {
+        // settled into an ordered pile at the bottom
+        const k = (ph - 0.58) / 0.42;
+        const ring = Math.floor(c * 5);
+        y = 0.04 + (4 - ring) * 0.055 + (1 - k) * 0.02;
+        const rr = (ring + 0.5) * 0.09;
+        const step = Math.round(b * 24) / 24;
+        x = Math.cos(step * Math.PI * 2) * rr;
+        z = Math.sin(step * Math.PI * 2) * rr;
+        mix = 1;
+      }
+      pa.setXYZ(i, x, y, z);
+      tmp.copy(CYAN).lerp(AMBER, mix);
+      ca.setXYZ(i, tmp.r, tmp.g, tmp.b);
+    }
+    pa.needsUpdate = true;
+    ca.needsUpdate = true;
+    if (cards.current)
+      cards.current.children.forEach((c, i) => {
+        const a = t * 0.35 + (i / 4) * Math.PI * 2;
+        c.position.set(Math.cos(a) * 1.05, 0.45 + i * 0.32 + Math.sin(t * 1.3 + i) * 0.05, Math.sin(a) * 1.05);
+        c.lookAt(0, c.position.y, 0);
+      });
+  });
+
+  return (
+    <group position={[0, 0.12, 0]}>
+      <lineSegments geometry={glass} material={lineMat("#4fe3ff", 0.32)} />
+      <lineSegments geometry={frame} material={lineMat("#9ef3ff", 0.5)} />
+      <points geometry={sand.g}>
+        <pointsMaterial size={0.022} vertexColors transparent opacity={0.95} blending={THREE.AdditiveBlending} depthWrite={false} />
+      </points>
+      {/* commitments, people, projects, reminders: the structure it extracts */}
+      <group ref={cards}>
+        {[0, 1, 2, 3].map((i) => (
+          <lineSegments key={i} geometry={card} material={lineMat(i % 2 ? "#ffb547" : "#4fe3ff", 0.75)} />
         ))}
-      </group>
-      <group position={[0.82, 0, 0.62]}>
-        <lineSegments geometry={cup} material={lineMat("#ffb547", 0.55)} />
-        <points ref={steam} geometry={steamGeo}>
-          <pointsMaterial size={0.02} color="#e2fbff" transparent opacity={0.5} blending={THREE.AdditiveBlending} depthWrite={false} />
-        </points>
       </group>
     </group>
   );
@@ -370,8 +526,11 @@ export function ProjectHologramScene({ active }: { active: Project["id"] }) {
         <Materialize active={active === "alpenglow"}>
           <GlobeModel />
         </Materialize>
-        <Materialize active={active === "cuecourt"}>
-          <CourtModel />
+        <Materialize active={active === "bites"}>
+          <BitesModel />
+        </Materialize>
+        <Materialize active={active === "ourglass"}>
+          <HourglassModel />
         </Materialize>
       </Rig>
       <ProjectorBase scale={0.95} />

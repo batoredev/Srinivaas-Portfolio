@@ -175,6 +175,36 @@ function Loop() {
   );
 }
 
+/** Education, as the model's training run: still in progress. */
+function Training({ index }: { index: number }) {
+  const ed = education[0];
+  return (
+    <motion.div
+      className="panel p-6"
+      initial={{ opacity: 0, x: 40 }}
+      whileInView={{ opacity: 1, x: 0 }}
+      viewport={{ once: true, margin: "-8%" }}
+      transition={{ duration: 0.8, delay: 0.24, ease: [0.16, 1, 0.3, 1] }}
+    >
+      <div className="mb-3 flex items-center justify-between gap-3">
+        <span className="flex items-center gap-3">
+          <span className="font-mono text-[11px] text-amber">{String(index).padStart(2, "0")}</span>
+          <span className="hud-label">Training · education</span>
+        </span>
+        <span className="flex items-center gap-2 font-mono text-[10px] tracking-[0.2em] text-amber">
+          <span className="h-1.5 w-1.5 rounded-full bg-amber animate-pulse-dot" /> IN PROGRESS
+        </span>
+      </div>
+      <h3 className="font-display text-[20px] font-semibold uppercase leading-tight tracking-wide text-ice sm:text-[22px]">{ed.school}</h3>
+      <p className="mt-1.5 text-[14.5px] text-holo-soft">{ed.program}</p>
+      <p className="mt-2 text-[13.5px] text-ice/65">{ed.note}</p>
+      <div className="relative mt-5 h-1 overflow-hidden bg-holo/10">
+        <div className="absolute inset-y-0 w-1/3 bg-gradient-to-r from-transparent via-amber to-transparent" style={{ animation: "sweep-x 2.6s ease-in-out infinite" }} />
+      </div>
+    </motion.div>
+  );
+}
+
 export function About() {
   const statementRef = useRef<HTMLParagraphElement>(null);
   const { scrollYProgress } = useScroll({ target: statementRef, offset: ["start 0.85", "end 0.45"] });
@@ -234,9 +264,7 @@ export function About() {
                   <p className="text-[15px] leading-[1.75] text-ice/75">{b.body}</p>
                 </motion.div>
               ))}
-              <p className="pt-2 font-mono text-[12.5px] text-holo-soft/70">
-                <span className="text-amber">&gt;</span> {profile.about[4]}
-              </p>
+              <Training index={blocks.length + 1} />
             </div>
           </div>
         </div>

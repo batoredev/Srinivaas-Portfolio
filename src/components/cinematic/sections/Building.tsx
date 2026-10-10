@@ -43,17 +43,17 @@ function useLogStream(lines: string[], active: boolean) {
   return shown;
 }
 
-function ProcessWindow({ item, index }: { item: B; index: number }) {
+function ProcessWindow({ item, index, wide }: { item: B; index: number; wide: boolean }) {
   const [ref, seen] = useSeen<HTMLDivElement>("0px 0px -10% 0px", false);
   const log = useLogStream(item.log, seen);
   const pid = 1000 + (hashString(item.name) % 8999);
-  const tiltY = index % 2 === 0 ? 7 : -7;
+  const tiltY = wide ? 0 : index % 2 === 0 ? 7 : -7;
   const statusColor = item.status === "Experimental" ? "bg-amber" : "bg-mint";
 
   return (
     <motion.div
       ref={ref}
-      className="group min-w-0 [perspective:1400px]"
+      className={`group min-w-0 [perspective:1400px] ${wide ? "lg:col-span-2" : ""}`}
       initial={{ opacity: 0, y: 60, rotateX: 18 }}
       whileInView={{ opacity: 1, y: 0, rotateX: 0 }}
       viewport={{ once: true, margin: "-10%" }}
@@ -123,13 +123,13 @@ export function Building() {
   return (
     <section id="building" data-section="building" className="section">
       <div className="container-hud">
-        <SectionTitle id="building" title="Currently Building" wordplay="Work in progress. Progress in work." effect="type" />
+        <SectionTitle id="building" title="Currently Building" wordplay="Work in progress." effect="type" />
         <p className="mt-6 max-w-[620px] text-[16px] leading-relaxed text-ice/70">
-          Four processes are running right now: a consumer product, an infrastructure migration, and two tools for AI-assisted engineering.
+          Three processes are running right now: an infrastructure migration and two tools for AI-assisted engineering.
         </p>
         <div className="mt-14 grid gap-6 lg:grid-cols-2 lg:gap-8">
           {currentlyBuilding.map((b, i) => (
-            <ProcessWindow key={b.name} item={b} index={i} />
+            <ProcessWindow key={b.name} item={b} index={i} wide={currentlyBuilding.length % 2 === 1 && i === currentlyBuilding.length - 1} />
           ))}
         </div>
       </div>

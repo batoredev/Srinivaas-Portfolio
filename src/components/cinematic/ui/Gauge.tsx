@@ -3,8 +3,7 @@
 import { motion } from "motion/react";
 import { achievements } from "@/data/content";
 import { useSeen } from "@/lib/hooks";
-import { Counter } from "../ui/Counter";
-import { SectionTitle } from "../ui/SectionTitle";
+import { Counter } from "./Counter";
 
 const SEGMENTS = 36;
 // round so server and client render identical attribute strings
@@ -18,7 +17,8 @@ function arc(r: number, a0: number, a1: number) {
   return `M${x0.toFixed(2)},${y0.toFixed(2)} A${r},${r} 0 0 1 ${x1.toFixed(2)},${y1.toFixed(2)}`;
 }
 
-function Gauge({ a, i }: { a: (typeof achievements)[number]; i: number }) {
+/** Arc-reactor gauge that powers up and counts when it scrolls into view. */
+export function Gauge({ a, i }: { a: (typeof achievements)[number]; i: number }) {
   const [ref, seen] = useSeen<HTMLDivElement>("0px 0px -12% 0px");
   const accent = i % 2 === 0 ? "#ffb547" : "#4fe3ff";
   const start = 90 + (360 - SWEEP) / 2;
@@ -33,7 +33,7 @@ function Gauge({ a, i }: { a: (typeof achievements)[number]; i: number }) {
       transition={{ duration: 0.7, delay: (i % 3) * 0.1 }}
       data-lock={a.label}
     >
-      <div className="relative aspect-square w-full max-w-[250px]">
+      <div className="relative aspect-square w-full max-w-[150px]">
         <svg viewBox="-120 -120 240 240" className="absolute inset-0 h-full w-full overflow-visible">
           {/* rotating tick ring */}
           <g className="animate-spin-slower group-hover:[animation-duration:6s]" style={{ transformOrigin: "0px 0px" }}>
@@ -79,28 +79,13 @@ function Gauge({ a, i }: { a: (typeof achievements)[number]; i: number }) {
           <circle r={62} fill="rgba(5,16,24,0.85)" />
         </svg>
         <div className="absolute inset-0 flex flex-col items-center justify-center">
-          <Counter value={a.value} prefix={a.prefix} suffix={a.suffix} className="font-display text-[clamp(30px,3.4vw,44px)] font-bold leading-none text-ice" />
-          <span className="mt-2 font-mono text-[10px] tracking-[0.3em]" style={{ color: accent }}>
+          <Counter value={a.value} prefix={a.prefix} suffix={a.suffix} className="font-display text-[clamp(20px,2.2vw,28px)] font-bold leading-none text-ice" />
+          <span className="mt-1 font-mono text-[8.5px] tracking-[0.25em]" style={{ color: accent }}>
             {a.unit}
           </span>
         </div>
       </div>
-      <p className="mt-3 max-w-[220px] text-[14px] leading-snug text-ice/70">{a.label}</p>
+      <p className="mt-2 max-w-[160px] text-[12.5px] leading-snug text-ice/70">{a.label}</p>
     </motion.div>
-  );
-}
-
-export function Achievements() {
-  return (
-    <section id="achievements" data-section="achievements" className="section">
-      <div className="container-hud">
-        <SectionTitle id="achievements" title="Achievements" wordplay="Numbers don't hallucinate." effect="odometer" />
-        <div className="mt-16 grid grid-cols-2 gap-x-6 gap-y-14 md:grid-cols-3">
-          {achievements.map((a, i) => (
-            <Gauge key={a.label} a={a} i={i} />
-          ))}
-        </div>
-      </div>
-    </section>
   );
 }
