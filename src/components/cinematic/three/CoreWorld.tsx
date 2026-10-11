@@ -131,7 +131,10 @@ const pointsVert = /* glsl */ `
     gl_PointSize = size * uPixelRatio / -mv.z;
 
     vec3 n = normalize(normalMatrix * nrm);
-    float fres = pow(1.0 - abs(dot(n, normalize(-mv.xyz))), 1.6);
+    float facing = dot(n, normalize(-mv.xyz));
+    float fres = pow(1.0 - abs(facing), 1.6);
+    // as a brain, the far side fades out so the folds on the near side read
+    float nearSide = mix(1.0, 0.06 + 0.94 * smoothstep(-0.15, 0.4, facing), uBrain);
 
     // cool training light → warm production light
     vec3 deep = mix(vec3(0.12, 0.42, 0.72), vec3(0.5, 0.2, 0.05), uWarm);
@@ -145,10 +148,10 @@ const pointsVert = /* glsl */ `
     col += vec3(0.9, 1.0, 1.0) * scan * 0.3 + vec3(1.0, 0.85, 0.6) * touch * 0.5;
     vColor = col;
 
-    float aBrain = ((0.12 + 0.62 * fres) * twinkle) * mix(0.18, 1.0, crest);
+    float aBrain = (0.34 + 0.5 * fres) * mix(1.0, twinkle, 0.5) * mix(0.1, 1.0, crest) * nearSide;
     float aShape = (0.3 + 0.5 * fres) * twinkle;
     float a = mix(aShape, aBrain, uBrain) + energy * 0.55 + scan * 0.18 + touch * 0.5;
-    if (interior > 0.5) a = 0.35 * twinkle + energy;
+    if (interior > 0.5) a = 0.22 * twinkle + energy;
     vAlpha = a * mix(0.25, 1.0, r) * uOpacity;
   }
 `;
@@ -450,6 +453,9 @@ function Core({ mobile, reduced, onLowPower }: { mobile: boolean; reduced: boole
   const tmp = useMemo(() => new THREE.Vector3(), []);
   const hit = useMemo(() => new THREE.Vector3(), []);
   const anchors = useMemo(() => BRAIN_LABELS.map((l) => new THREE.Vector3(...l.anchor)), []);
+  const normals = useMemo(() => BRAIN_LABELS.map((l) => new THREE.Vector3(...l.normal).normalize()), []);
+  const wq = useMemo(() => new THREE.Quaternion(), []);
+  const nw = useMemo(() => new THREE.Vector3(), []);
 
   const shownShape = () => (s.current.morph > 0.5 ? s.current.to : s.current.from);
 
@@ -623,16 +629,20 @@ function Core({ mobile, reduced, onLowPower }: { mobile: boolean; reduced: boole
         continue;
       }
       tmp.copy(anchors[i]).applyMatrix4(g.matrixWorld);
-      const facing = tmp.clone().sub(camera.position).normalize().dot(tmp.clone().sub(g.position).normalize());
+      g.getWorldQuaternion(wq);
+      nw.copy(normals[i]).applyQuaternion(wq);
+      // > 0 when the surface there faces the camera
+      const facing = nw.dot(camera.position.clone().sub(tmp).normalize());
       tmp.project(camera);
       const x = (tmp.x * 0.5 + 0.5) * size.width;
       const y = (-tmp.y * 0.5 + 0.5) * size.height;
       const center = new THREE.Vector3().setFromMatrixPosition(g.matrixWorld).project(camera);
       const bx = (center.x * 0.5 + 0.5) * size.width;
-      const left = x > size.width - 250 || (x < bx && x > 260);
+      const pinned = BRAIN_LABELS[i].side;
+      const left = pinned ? pinned === "left" : x > size.width - 250 || (x < bx && x > 260);
       el.style.transform = `translate3d(${x}px, ${y}px, 0)`;
       el.dataset.side = left ? "left" : "right";
-      const vis = facing < 0.15 ? 1 : 0.18;
+      const vis = smoothstep(0.08, 0.3, facing);
       el.style.opacity = String(eased > 0.95 ? vis * st.labels : 0);
     }
   });

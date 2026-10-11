@@ -29,7 +29,7 @@ export type Pose = { x: number; y: number; z: number; s: number; o: number };
 type Responsive = { desktop: Pose; mobile: Pose };
 
 export const HERO_POSE: Responsive = {
-  desktop: { x: 1.2, y: 0.08, z: 0, s: 1, o: 1 },
+  desktop: { x: 1.12, y: 0.06, z: 0, s: 0.9, o: 1 },
   mobile: { x: 0, y: 1.6, z: -0.3, s: 0.72, o: 0.9 },
 };
 export const PROLOGUE_POSE: Responsive = {

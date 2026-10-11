@@ -60,14 +60,14 @@ The whole page is one world. A single WebGL particle form, **the Core**, lives b
 
 | # | Chapter | Section | Signature effect | Title effect |
 |---|---------|---------|------------------|--------------|
-| 00 | Boot | Hero | Arc-reactor power-up that opens on its own, the Core as a neural brain (16k points, synapse pulses, scan plane, cursor-reactive), brain regions mapped to skills | Glyph decode |
+| 00 | Boot | Hero | Arc-reactor power-up that opens on its own, the Core as an anatomical neural brain (lobes, fissures and folds, 16k points, synapse pulses, scan plane, cursor-reactive), brain regions mapped to skills | Glyph decode |
 | 01 | Identity | About Me (with Education) | Projected ID hologram with a name-seeded "neural fingerprint", training card | Letters assemble from scatter |
 | 02 | Weights | Tech Stack | Live feed-forward neural network: languages in, products out, hover to trace synapses | Neurons fire letter by letter |
 | 03 | Deployment | Experience (with key numbers) | Arc-reactor gauges that power up and count, then `git log --graph` with branch lanes that draw as you scroll | Diff (– cliché / + Experience) |
 | 04 | Inference | Featured Projects (with case studies) | Holo-projector: each project materialises as its own 3D model; an X-ray lens reveals the architecture blueprint underneath | Hologram flicker |
 | 05 | Open weights | GitHub / Coding | Interactive terminal (try `help`, `repos`, `sudo hire srinivaas`) + 3D activity skyline | Shell prompt |
 | 06 | Next epoch | Currently Building | Tilted holo-screens streaming live build logs | Typewriter |
-| 07 | Handshake | Contact (with résumé) | "Creation of Adam": a procedural robotic hand reaches for your cursor, an energy arc closes the gap | Signal lock |
+| 07 | Handshake | Contact (with résumé) | A synthetic hand of light over a visible robotic skeleton reaches in; as your cursor nears its fingertip a stream of particles reaches out to meet it, and touching the tip locks on | Signal lock |
 | 08 | Shutdown | Footer | Session stats (uptime, synapses fired, chapters completed), cursor-lit wordmark | CRT power-on |
 
 Waiting in the wings, shown once they have real entries: Certifications (Validation, holographic foil cards), Research & Writing (Papers, attention arcs) and Testimonials (Human feedback, voiceprint visualiser).
@@ -151,7 +151,7 @@ src/
       ar/                AR dialog and page, model-viewer wrapper, QR code, AR model builder
       hud/               BootSequence, Hud + chapter rail, Reticle, Handoff, Retrain
       sections/          Prologue, then one file per chapter
-      three/             CoreWorld (the Core, its shapes, storyline and worker), Stage, ProjectHologram, Skyline, RoboticHand
+      three/             CoreWorld (the Core, its shapes, storyline and worker), Stage, ProjectHologram, Skyline, HoloHand
       ui/                SectionTitle (title effects), Chapter (interludes), Decode, Counter, Gauge
     professional/        ProfessionalPage, PrintResume, client islands
   data/content.ts        all copy and data

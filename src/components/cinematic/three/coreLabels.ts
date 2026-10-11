@@ -4,15 +4,20 @@
  * positions the elements registered here every frame.
  */
 
-export type BrainLabel = { name: string; note: string; anchor: [number, number, number] };
+/**
+ * `normal` points out of the surface at the anchor; a label shows only while
+ * it faces the camera. `side` pins which side of its dot the label sits on,
+ * so neighbouring labels don't collide.
+ */
+export type BrainLabel = { name: string; note: string; anchor: [number, number, number]; normal: [number, number, number]; side?: "left" | "right" };
 
 export const BRAIN_LABELS: BrainLabel[] = [
-  { name: "Frontal lobe", note: "product thinking", anchor: [0.22, 0.34, 0.8] },
-  { name: "Parietal lobe", note: "systems design", anchor: [0.34, 0.6, -0.2] },
-  { name: "Temporal lobe", note: "listening to owners", anchor: [0.66, -0.26, 0.28] },
-  { name: "Occipital lobe", note: "interface design", anchor: [0.24, 0.16, -0.9] },
-  { name: "Cerebellum", note: "infra & ops · balance", anchor: [0.3, -0.46, -0.66] },
-  { name: "Brain stem", note: "keeps servers breathing", anchor: [0.0, -0.86, -0.38] },
+  { name: "Frontal lobe", note: "product thinking", anchor: [0.64, 0.24, 0.5], normal: [0.55, 0.3, 0.78] },
+  { name: "Parietal lobe", note: "systems design", anchor: [0.65, 0.42, -0.3], normal: [0.62, 0.78, -0.1] },
+  { name: "Temporal lobe", note: "listening to owners", anchor: [0.64, -0.32, 0.2], normal: [0.95, -0.25, 0.2], side: "left" },
+  { name: "Occipital lobe", note: "interface design", anchor: [0.58, 0.06, -0.78], normal: [0.5, 0.15, -0.85] },
+  { name: "Cerebellum", note: "infra & ops · balance", anchor: [0.4, -0.4, -0.66], normal: [0.7, -0.45, -0.55] },
+  { name: "Brain stem", note: "keeps servers breathing", anchor: [0.06, -0.62, -0.27], normal: [0.55, -0.35, 0.75], side: "right" },
 ];
 
 export const labelEls: (HTMLDivElement | null)[] = [];
