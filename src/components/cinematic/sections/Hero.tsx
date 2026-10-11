@@ -1,16 +1,13 @@
 "use client";
 
-import dynamic from "next/dynamic";
 import { AnimatePresence, motion } from "motion/react";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import { profile } from "@/data/content";
 import { useIsDesktop } from "@/lib/hooks";
 import { useStore, setStore } from "@/lib/store";
-import { BRAIN_LABELS } from "../three/NeuralBrain";
+import { BRAIN_LABELS, labelEls } from "../three/coreLabels";
 import { useScramble } from "../ui/SectionTitle";
 import { scrollToSection } from "../scroll";
-
-const HeroCanvas = dynamic(() => import("../three/HeroCanvas"), { ssr: false });
 
 const ROTATING = ["run on.", "count on.", "grow on.", "bank on."];
 
@@ -57,12 +54,10 @@ function NameLine({ text, outline, active, delay }: { text: string; outline?: bo
 export function Hero() {
   const desktop = useIsDesktop();
   const engaged = useStore((s) => s.engaged);
-  const labelRefs = useRef<(HTMLDivElement | null)[]>([]);
 
   return (
     <section id="hero" data-section="hero" className="relative h-[100svh] min-h-[640px] w-full overflow-hidden">
-      <HeroCanvas labelRefs={labelRefs} mobile={!desktop} />
-
+      {/* the Core itself lives in the shared world canvas behind the page */}
       {/* grid + horizon glow layered over the canvas */}
       <div className="pointer-events-none absolute inset-0 bg-[linear-gradient(rgba(79,227,255,0.035)_1px,transparent_1px),linear-gradient(90deg,rgba(79,227,255,0.035)_1px,transparent_1px)] bg-[size:64px_64px] [mask-image:radial-gradient(ellipse_at_60%_50%,transparent_20%,#000_75%)]" />
       <div className="pointer-events-none absolute inset-x-0 bottom-0 h-48 bg-gradient-to-t from-void to-transparent" />
@@ -74,7 +69,7 @@ export function Hero() {
             <div
               key={l.name}
               ref={(el) => {
-                labelRefs.current[i] = el;
+                labelEls[i] = el;
               }}
               className="group absolute left-0 top-0 opacity-0"
               data-side="right"
@@ -138,6 +133,9 @@ export function Hero() {
             </button>
             <button type="button" className="btn-ghost" data-lock="Professional mode" onClick={() => setStore({ handoff: true })}>
               Professional mode <span aria-hidden>↗</span>
+            </button>
+            <button type="button" className="btn-ghost" data-lock="Put the Core on your desk" onClick={() => setStore({ ar: "core" })}>
+              <span aria-hidden>◈</span> View in AR
             </button>
           </motion.div>
         </div>

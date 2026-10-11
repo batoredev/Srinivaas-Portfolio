@@ -574,7 +574,7 @@ function Lock({ text, seen }: { text: string; seen: boolean }) {
         </span>
       </span>
       <motion.span
-        className="absolute -top-7 right-0 whitespace-nowrap font-mono text-[11px] tracking-[0.3em] text-amber"
+        className="absolute left-4 top-full mt-2 whitespace-nowrap font-mono text-[11px] tracking-[0.3em] text-amber sm:left-full sm:top-1/2 sm:ml-6 sm:mt-0 sm:-translate-y-1/2"
         initial={{ opacity: 0 }}
         animate={!jit ? { opacity: 1 } : undefined}
       >

@@ -1,27 +1,10 @@
 "use client";
 
-import { motion, useMotionValue, useScroll, useSpring, useTransform, type MotionValue } from "motion/react";
+import { motion, useMotionValue, useSpring, useTransform } from "motion/react";
 import { useMemo, useRef } from "react";
 import { education, profile } from "@/data/content";
 import { hashString, mulberry32 } from "@/lib/random";
 import { SectionTitle } from "../ui/SectionTitle";
-
-const STATEMENT = "I talk to the business owner, model the data, build the product, and run the servers it lives on.";
-const VERBS = new Set(["talk", "model", "build", "run"]);
-
-function ScrubWord({ word, i, n, progress }: { word: string; i: number; n: number; progress: MotionValue<number> }) {
-  const start = i / n;
-  const end = start + 1.6 / n;
-  const opacity = useTransform(progress, [start, end], [0.12, 1]);
-  const y = useTransform(progress, [start, end], [6, 0]);
-  const clean = word.replace(/[^a-z]/gi, "").toLowerCase();
-  const verb = VERBS.has(clean);
-  return (
-    <motion.span style={{ opacity, y }} className={`mr-[0.28em] inline-block ${verb ? "text-amber glow-amber" : ""}`}>
-      {word}
-    </motion.span>
-  );
-}
 
 /** Concentric, noise-warped rings seeded by the name: a "neural fingerprint". */
 function Fingerprint() {
@@ -146,35 +129,6 @@ function IdHologram() {
   );
 }
 
-function Loop() {
-  return (
-    <div className="relative mt-12">
-      <div className="hud-label mb-5">The loop · every project, end to end</div>
-      <div className="relative grid grid-cols-2 gap-3 sm:grid-cols-4">
-        <div className="pointer-events-none absolute left-[12%] right-[12%] top-[26px] hidden h-px bg-holo/20 sm:block">
-          <span className="absolute top-1/2 h-[3px] w-16 -translate-y-1/2 bg-gradient-to-r from-transparent via-amber to-transparent" style={{ animation: "loop-run 4s linear infinite" }} />
-        </div>
-        {profile.loop.map((s, i) => (
-          <div key={s.verb} className="relative flex flex-col items-center text-center">
-            <span
-              className="relative z-10 flex h-[52px] w-[52px] items-center justify-center border border-holo/40 bg-void font-display text-lg font-bold text-ice"
-              style={{ animation: `loop-node 4s ease-in-out ${i}s infinite`, clipPath: "polygon(25% 0,75% 0,100% 50%,75% 100%,25% 100%,0 50%)" }}
-            >
-              {String(i + 1).padStart(2, "0")}
-            </span>
-            <span className="mt-3 font-display text-[17px] font-semibold uppercase tracking-[0.16em] text-ice">{s.verb}</span>
-            <span className="mt-1 text-[13px] text-fog">{s.detail}</span>
-          </div>
-        ))}
-      </div>
-      <style>{`
-        @keyframes loop-run { from { left: -10% } to { left: 100% } }
-        @keyframes loop-node { 0%, 20%, 100% { background: #020409; color: #e2fbff; box-shadow: none } 8% { background: #ffb547; color: #020409; box-shadow: 0 0 30px #ffb547 } }
-      `}</style>
-    </div>
-  );
-}
-
 /** Education, as the model's training run: still in progress. */
 function Training({ index }: { index: number }) {
   const ed = education[0];
@@ -206,10 +160,6 @@ function Training({ index }: { index: number }) {
 }
 
 export function About() {
-  const statementRef = useRef<HTMLParagraphElement>(null);
-  const { scrollYProgress } = useScroll({ target: statementRef, offset: ["start 0.85", "end 0.45"] });
-  const words = STATEMENT.split(" ");
-
   const blocks = [
     { k: "Shipped", body: profile.about[1] },
     { k: "Building", body: profile.about[2] },
@@ -229,16 +179,8 @@ export function About() {
           </div>
 
           <div className="lg:col-span-7">
-            <p ref={statementRef} className="font-display text-[clamp(28px,3.4vw,46px)] font-medium leading-[1.18] text-ice">
-              {words.map((w, i) => (
-                <ScrubWord key={i} word={w} i={i} n={words.length} progress={scrollYProgress} />
-              ))}
-            </p>
-
-            <Loop />
-
             <motion.p
-              className="mt-14 text-[17px] leading-[1.75] text-ice/85"
+              className="font-display text-[clamp(22px,2.4vw,32px)] font-medium leading-[1.35] text-ice"
               initial={{ opacity: 0, y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true, margin: "-10%" }}

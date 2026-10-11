@@ -49,12 +49,19 @@ Printing `/professional` from any browser gives the same two-page résumé.
 
 ## The story (cinematic mode)
 
-The section order is a narrative arc. A narrator (SV-OS) opens each chapter with a typed line, which is also spoken aloud if sound is on.
+The whole page is one world. A single WebGL particle form, **the Core**, lives behind every chapter (`three/CoreWorld.tsx`). It starts as a neural brain and re-forms into each chapter's shape as you scroll: a fingerprint for Identity, a network for Weights, a DNA helix of commits for Deployment, a lattice for Inference, a tensor for Open weights, orbiting processes for Next epoch, two reaching streams for Handshake, and a single point at Shutdown. Scroll position drives every change, so scrolling back plays it in reverse.
+
+- **Prologue.** Before the first chapter, six short beats decode word by word over the Core ("Every business runs on a story…", Talk, Model, Build, Run, "One person. End to end."). If a visitor waits at the top, a slow guided glide plays the prologue once per session; any scroll, key or touch hands control back.
+- **Interludes.** Between chapters the Core takes centre stage and re-forms while the narrator (SV-OS) names the next chapter. The text decodes from tokens as it scrolls in and dissolves as the chapter begins; the line is also spoken if sound is on. In the chapter itself the Core steps back to the emptier side of the screen.
+- **Colour.** The world is cool training light until Deployment, then turns to warm production light.
+- **Retrain the Core.** The refresh button in the HUD (or the R key) re-initialises its weights: it bursts apart and re-forms in a new colour.
+- **Replay.** The footer's replay button scrolls back to the start and powers the Core up again.
+- **Adaptive quality.** If frames run long, it lowers resolution, then turns off bloom, then halves the particles.
 
 | # | Chapter | Section | Signature effect | Title effect |
 |---|---------|---------|------------------|--------------|
-| 00 | Boot | Hero | Arc-reactor power-up that opens on its own, WebGL neural brain (16k-point SDF, synapse pulses, scan plane, cursor-reactive), brain regions mapped to skills | Glyph decode |
-| 01 | Identity | About Me (with Education) | Projected ID hologram with a name-seeded "neural fingerprint", scroll-scrubbed statement, Talk → Model → Build → Run loop, training card | Letters assemble from scatter |
+| 00 | Boot | Hero | Arc-reactor power-up that opens on its own, the Core as a neural brain (16k points, synapse pulses, scan plane, cursor-reactive), brain regions mapped to skills | Glyph decode |
+| 01 | Identity | About Me (with Education) | Projected ID hologram with a name-seeded "neural fingerprint", training card | Letters assemble from scatter |
 | 02 | Weights | Tech Stack | Live feed-forward neural network: languages in, products out, hover to trace synapses | Neurons fire letter by letter |
 | 03 | Deployment | Experience (with key numbers) | Arc-reactor gauges that power up and count, then `git log --graph` with branch lanes that draw as you scroll | Diff (– cliché / + Experience) |
 | 04 | Inference | Featured Projects (with case studies) | Holo-projector: each project materialises as its own 3D model; an X-ray lens reveals the architecture blueprint underneath | Hologram flicker |
@@ -67,7 +74,20 @@ Waiting in the wings, shown once they have real entries: Certifications (Validat
 
 Project holograms: Perfect Study Space (floors of live desks), Bites by Batore (a city grid where pins wait for human review inside a 2 km radius), OurGlass (an hourglass: loose conversation falls through and settles as structure), Alpenglow Global (a globe with leads arcing home).
 
+Each project hologram, and the Core itself, can also be placed in your room in AR (see [AR projector](#ar-projector)).
+
 Global chrome: target-lock reticle cursor (brackets snap to what you hover), chapter HUD with live IST clock, chapter rail, Lenis smooth scroll, synthesised sound (opt-in, no audio files), reduced-motion support.
+
+## AR projector
+
+"View in AR" on the hero and on each project opens a 3D preview (Google's [`<model-viewer>`](https://modelviewer.dev), self-hosted in `public/vendor/` because its npm package pins an older three.js). On a phone it places the model in the room: WebXR or Scene Viewer on Android, Quick Look on iPhone. On a desktop the dialog shows a QR code that opens the same model on a phone at `/ar/<model>` (`core`, `pss`, `bites`, `ourglass`, `alpenglow`).
+
+The models in `public/ar-models/` are generated from code (`src/components/cinematic/ar/arModels.ts`) at real table-top scale. After changing that file, regenerate them:
+
+```bash
+npm run build && npm start      # terminal 1
+AR_URL=http://localhost:3000 npm run ar:models   # terminal 2 (needs Playwright, like resume:pdf)
+```
 
 ## The one-way door
 
@@ -75,12 +95,12 @@ Four independent layers stop any route from Professional back to Cinematic (`src
 
 1. **No links.** Professional has its own root layout and renders nothing that points to `/`.
 2. **History is rewritten.** Leaving cinematic uses `location.replace()`, so Back cannot return to it.
-3. **Server lock.** `src/proxy.ts` stamps a session cookie on `/professional` and redirects any later request for `/` there (HTTP 307).
+3. **Server lock.** `src/proxy.ts` stamps a session cookie on `/professional` and redirects any later request for `/` or an `/ar/…` page there (HTTP 307).
 4. **Client guards.** An inline pre-paint script and a `pageshow` listener in the cinematic layout catch back-forward-cache restores and stale tabs.
 
 The 404 page only offers "Go back". The lock lasts for the browser session. To see Cinematic again while developing, use a private window or clear the site's cookies.
 
-`scripts/check-one-way-door.mjs` tests the server half against a running site (redirect, cookie, caching, no links back):
+`scripts/check-one-way-door.mjs` tests the server half against a running site (redirect, cookie, caching, AR pages, no links back):
 
 ```bash
 npm run build && npm start                 # terminal 1
@@ -122,19 +142,20 @@ Next.js 16 (App Router, Turbopack) · React 19 · TypeScript · Tailwind CSS 4 �
 ```
 src/
   app/
-    (cinematic)/         layout (fonts, pre-paint guard), page, cinematic.css
+    (cinematic)/         layout (fonts, pre-paint guard), page, cinematic.css, ar/[model] (AR projector page)
     (professional)/      layout, /professional page, professional.css
     global-not-found.tsx
   components/
     cinematic/
-      CinematicApp.tsx   renders the chapters in story order, Lenis, HUD, boot
-      hud/               BootSequence, Hud + chapter rail, Reticle, Handoff
-      sections/          one file per chapter
-      three/             Stage (lazy canvas), NeuralBrain (+ worker), ProjectHologram, Skyline, RoboticHand
-      ui/                SectionTitle (title effects), Chapter, Counter, Gauge
+      CinematicApp.tsx   renders the chapters in story order, Lenis, HUD, boot, guided glide
+      ar/                AR dialog and page, model-viewer wrapper, QR code, AR model builder
+      hud/               BootSequence, Hud + chapter rail, Reticle, Handoff, Retrain
+      sections/          Prologue, then one file per chapter
+      three/             CoreWorld (the Core, its shapes, storyline and worker), Stage, ProjectHologram, Skyline, RoboticHand
+      ui/                SectionTitle (title effects), Chapter (interludes), Decode, Counter, Gauge
     professional/        ProfessionalPage, PrintResume, client islands
   data/content.ts        all copy and data
   lib/                   mode lock, store, audio, hooks
   proxy.ts               server half of the one-way door
-scripts/generate-resume-pdf.mjs
+scripts/                generate-resume-pdf, export-ar-models, check-one-way-door
 ```
