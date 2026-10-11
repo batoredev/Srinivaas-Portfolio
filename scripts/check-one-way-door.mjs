@@ -76,6 +76,8 @@ console.log(`One-way door checks against ${BASE}\n`);
   const locked = await get("/ar/core", LOCK);
   const to = locked.headers.get("location") ?? "";
   check("locked visitor asking for an AR page is redirected to /professional", (locked.status === 307 || locked.status === 308) && new URL(to, BASE).pathname === "/professional", `status ${locked.status} → ${to}`);
+  const unknown = await get("/ar/not-a-model");
+  check("unknown AR model answers 404", unknown.status === 404, `status ${unknown.status}`);
 }
 
 {
