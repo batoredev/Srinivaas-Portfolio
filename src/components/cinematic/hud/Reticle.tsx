@@ -29,6 +29,24 @@ export function Reticle() {
     let raf = 0;
     let down = false;
 
+    const retarget = (t: Element | null) => {
+      if (t === target) return;
+      target = t;
+      if (t) {
+        hudAudio.lock();
+        const name =
+          t.getAttribute("data-lock") ||
+          t.getAttribute("aria-label") ||
+          (t as HTMLElement).innerText?.trim().split("\n")[0] ||
+          (t as HTMLInputElement).placeholder ||
+          "target";
+        if (label.current) label.current.textContent = `LOCK ▸ ${name.slice(0, 32).toUpperCase()}`;
+        frame.current?.classList.add("locked");
+      } else {
+        frame.current?.classList.remove("locked");
+      }
+    };
+
     const onMove = (e: PointerEvent) => {
       m.x = e.clientX;
       m.y = e.clientY;
@@ -36,23 +54,7 @@ export function Reticle() {
         visible = true;
         [dot, ring, frame].forEach((el) => el.current && (el.current.style.opacity = "1"));
       }
-      const t = (e.target as Element | null)?.closest?.(INTERACTIVE) ?? null;
-      if (t !== target) {
-        target = t;
-        if (t) {
-          hudAudio.lock();
-          const name =
-            t.getAttribute("data-lock") ||
-            t.getAttribute("aria-label") ||
-            (t as HTMLElement).innerText?.trim().split("\n")[0] ||
-            (t as HTMLInputElement).placeholder ||
-            "target";
-          if (label.current) label.current.textContent = `LOCK ▸ ${name.slice(0, 32).toUpperCase()}`;
-          frame.current?.classList.add("locked");
-        } else {
-          frame.current?.classList.remove("locked");
-        }
-      }
+      retarget((e.target as Element | null)?.closest?.(INTERACTIVE) ?? null);
     };
     const onLeave = () => {
       visible = false;
@@ -61,8 +63,14 @@ export function Reticle() {
     const onDown = () => {
       down = true;
     };
+    let recheck = 0;
     const onUp = () => {
       down = false;
+      // a click can open a dialog over the target without the pointer moving
+      clearTimeout(recheck);
+      recheck = window.setTimeout(() => {
+        if (visible) retarget(document.elementFromPoint(m.x, m.y)?.closest(INTERACTIVE) ?? null);
+      }, 350);
     };
 
     const loop = () => {
@@ -103,6 +111,7 @@ export function Reticle() {
     document.addEventListener("pointerleave", onLeave);
     return () => {
       cancelAnimationFrame(raf);
+      clearTimeout(recheck);
       window.removeEventListener("pointermove", onMove);
       window.removeEventListener("pointerdown", onDown);
       window.removeEventListener("pointerup", onUp);

@@ -8,7 +8,7 @@ import { hudAudio } from "@/lib/audio";
 import { setStore } from "@/lib/store";
 import { SectionTitle } from "../ui/SectionTitle";
 
-const HandCanvas = dynamic(() => import("../three/RoboticHand"), { ssr: false });
+const HandCanvas = dynamic(() => import("../three/HoloHand"), { ssr: false });
 
 function Field({
   label,
@@ -157,12 +157,15 @@ export function Contact() {
           </div>
 
           <div className="relative h-[420px] sm:h-[520px] lg:col-span-7 lg:h-[640px]">
-            <HandCanvas
-              onContact={() => {
-                hudAudio.confirm();
-                setContact(true);
-              }}
-            />
+            {/* soft edges: the forearm fades out instead of meeting the canvas edge */}
+            <div className="absolute inset-0 [mask-image:linear-gradient(to_right,transparent,#000_10%,#000_80%,transparent)]">
+              <HandCanvas
+                onContact={() => {
+                  hudAudio.confirm();
+                  setContact(true);
+                }}
+              />
+            </div>
             <div className="pointer-events-none absolute left-2 top-2 flex items-center gap-2 sm:left-6">
               <span className={contact ? "live-dot" : "h-[7px] w-[7px] rounded-full bg-amber animate-pulse-dot"} />
               <span className={`hud-label ${contact ? "!text-mint" : ""}`}>

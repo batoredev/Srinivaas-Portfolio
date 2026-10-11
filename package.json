@@ -8,6 +8,7 @@
     "start": "next start",
     "lint": "eslint",
     "resume:pdf": "node scripts/generate-resume-pdf.mjs",
+    "ar:models": "node scripts/export-ar-models.mjs",
     "cf:build": "opennextjs-cloudflare build --openNextConfigPath cloudflare/open-next.config.ts",
     "cf:preview": "wrangler dev",
     "cf:deploy": "wrangler deploy"
@@ -22,6 +23,7 @@
     "motion": "^13.4.6",
     "next": "16.3.8",
     "postprocessing": "^6.39.5",
+    "qrcode-generator": "2.0.4",
     "react": "19.2.8",
     "react-dom": "19.2.8",
     "three": "^0.186.1"

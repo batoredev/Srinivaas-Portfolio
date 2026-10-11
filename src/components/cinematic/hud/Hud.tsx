@@ -8,6 +8,7 @@ import { useClock } from "@/lib/hooks";
 import { setStore, useStore } from "@/lib/store";
 import { scrollToSection } from "../scroll";
 import { useScramble } from "../ui/SectionTitle";
+import { RetrainButton } from "./Retrain";
 
 export function Monogram({ size = 34 }: { size?: number }) {
   return (
@@ -23,12 +24,13 @@ export function Monogram({ size = 34 }: { size?: number }) {
 
 function ActiveSection() {
   const active = useStore((s) => s.active);
+  const prologue = useStore((s) => s.prologue);
   const sec = sections.find((s) => s.id === active) ?? sections[0];
-  const text = `CH.${sec.code} · ${sec.chapter.toUpperCase()}`;
+  const text = prologue ? `CH.${sec.code} · PROLOGUE` : `CH.${sec.code} · ${sec.chapter.toUpperCase()}`;
   return (
     <span className="font-mono text-[11px] tracking-[0.22em] text-holo-soft">
       <Scrambled key={text} text={text} />
-      <span className="ml-3 text-ice/40">{sec.label.toUpperCase()}</span>
+      <span className="ml-3 text-ice/40">{prologue ? "THE METHOD" : sec.label.toUpperCase()}</span>
     </span>
   );
 }
@@ -132,6 +134,7 @@ export function Hud() {
               <span className="hidden font-mono text-[10.5px] tracking-[0.2em] text-holo-soft/70 xl:inline">
                 CJB <span className="text-ice">{clock}</span> IST
               </span>
+              <RetrainButton compact />
               <SoundToggle compact />
               <button
                 type="button"

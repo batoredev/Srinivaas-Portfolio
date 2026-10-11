@@ -8,6 +8,7 @@ import { hudAudio } from "@/lib/audio";
 import { useSeen } from "@/lib/hooks";
 import { Counter } from "../ui/Counter";
 import { SectionTitle } from "../ui/SectionTitle";
+import { ArButton } from "../ar/ArModal";
 
 const HologramCanvas = dynamic(() => import("../three/ProjectCanvas"), { ssr: false });
 
@@ -233,24 +234,28 @@ export function Projects() {
                   </div>
                 </div>
               )}
-              <div className="pointer-events-none absolute left-4 top-4 flex items-center gap-2">
+              {/* on phones the label drops below the buttons so they never collide */}
+              <div className="pointer-events-none absolute left-4 top-[3.6rem] flex items-center gap-2 sm:top-4">
                 <span className="live-dot" />
                 <span className="hud-label">Holo-projector · {p.name}</span>
               </div>
-              {p.blueprint && (
-                <button
-                  type="button"
-                  onClick={() => {
-                    hudAudio.tick();
-                    setXrayOn((v) => !v);
-                  }}
-                  aria-pressed={xray}
-                  className={`absolute right-3 top-3 border px-2.5 py-1.5 font-mono text-[10.5px] tracking-[0.2em] transition-colors ${xray ? "border-amber bg-amber/15 text-amber" : "border-holo/30 bg-void/60 text-holo-soft hover:border-amber hover:text-amber"}`}
-                  data-lock="Toggle X-ray"
-                >
-                  {xray ? "◐ HOLOGRAM" : "◑ X-RAY"}
-                </button>
-              )}
+              <div className="absolute right-3 top-3 flex gap-2">
+                {p.blueprint && (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      hudAudio.tick();
+                      setXrayOn((v) => !v);
+                    }}
+                    aria-pressed={xray}
+                    className={`border px-2.5 py-1.5 font-mono text-[10.5px] tracking-[0.2em] transition-colors ${xray ? "border-amber bg-amber/15 text-amber" : "border-holo/30 bg-void/60 text-holo-soft hover:border-amber hover:text-amber"}`}
+                    data-lock="Toggle X-ray"
+                  >
+                    {xray ? "◐ HOLOGRAM" : "◑ X-RAY"}
+                  </button>
+                )}
+                <ArButton id={p.id} label="VIEW IN AR" />
+              </div>
               <div className="pointer-events-none absolute bottom-4 right-4 text-right font-mono text-[10px] leading-relaxed tracking-[0.18em] text-holo/50">
                 <div>MODEL {String(idx + 1).padStart(2, "0")}/{String(projects.length).padStart(2, "0")}</div>
                 <div>{p.kind.toUpperCase()}</div>

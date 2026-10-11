@@ -70,6 +70,17 @@ console.log(`One-way door checks against ${BASE}\n`);
 }
 
 {
+  const res = await get("/ar/core");
+  check("AR projector page loads for a new visitor", res.status === 200, `status ${res.status}`);
+  check("AR projector page is never cached", /no-store/.test(res.headers.get("cache-control") ?? ""), res.headers.get("cache-control"));
+  const locked = await get("/ar/core", LOCK);
+  const to = locked.headers.get("location") ?? "";
+  check("locked visitor asking for an AR page is redirected to /professional", (locked.status === 307 || locked.status === 308) && new URL(to, BASE).pathname === "/professional", `status ${locked.status} → ${to}`);
+  const unknown = await get("/ar/not-a-model");
+  check("unknown AR model answers 404", unknown.status === 404, `status ${unknown.status}`);
+}
+
+{
   const res = await get("/this-page-does-not-exist");
   const html = await res.text();
   const link = html.match(LINK_TO_ROOT);

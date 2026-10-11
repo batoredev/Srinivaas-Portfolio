@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import { profile, sections } from "@/data/content";
 import { useClock } from "@/lib/hooks";
-import { setStore, useStore } from "@/lib/store";
+import { getStore, setStore, useStore } from "@/lib/store";
 import { scrollToSection } from "../scroll";
 import { SectionTitle } from "../ui/SectionTitle";
 
@@ -88,7 +88,16 @@ export function Footer() {
 
         <div className="mt-14 flex flex-col gap-8 md:flex-row md:items-end md:justify-between">
           <nav className="flex flex-wrap gap-x-7 gap-y-3 font-mono text-[12px] tracking-[0.15em]">
-            <button type="button" onClick={() => scrollToSection("hero")} className="text-ice/80 hover:text-amber" data-lock="Replay the story">
+            <button
+              type="button"
+              onClick={() => {
+                scrollToSection("hero");
+                // the Core re-ignites as the visitor arrives back at the top
+                setTimeout(() => setStore({ reignite: getStore().reignite + 1 }), 1400);
+              }}
+              className="text-ice/80 hover:text-amber"
+              data-lock="Replay the story"
+            >
               ↺ REPLAY THE STORY
             </button>
             <button type="button" onClick={() => setStore({ handoff: true })} className="text-amber hover:text-ice" data-lock="Professional mode">

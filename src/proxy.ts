@@ -4,13 +4,16 @@ import { MODE_COOKIE, MODE_LOCKED, PROFESSIONAL_PATH } from "@/lib/mode";
 /**
  * Server half of the one-way door (see src/lib/mode.ts).
  * - Visiting /professional stamps the lock cookie (session-scoped).
- * - Any later request for the cinematic root is redirected to /professional.
+ * - Any later request for a cinematic page (the root, or an AR projector
+ *   page) is redirected to /professional.
  */
+const isCinematic = (pathname: string) => pathname === "/" || pathname === "/ar" || pathname.startsWith("/ar/");
+
 export function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
   const locked = request.cookies.get(MODE_COOKIE)?.value === MODE_LOCKED;
 
-  if (pathname === "/" && locked) {
+  if (isCinematic(pathname) && locked) {
     const url = request.nextUrl.clone();
     url.pathname = PROFESSIONAL_PATH;
     url.search = "";
@@ -21,8 +24,8 @@ export function proxy(request: NextRequest) {
   }
 
   const res = NextResponse.next();
-  if (pathname === "/") {
-    // Never let a shared cache hand the cinematic page to a locked visitor.
+  if (isCinematic(pathname)) {
+    // Never let a shared cache hand a cinematic page to a locked visitor.
     res.headers.set("Cache-Control", "private, no-store");
   }
   if (pathname.startsWith(PROFESSIONAL_PATH) && !locked) {
@@ -32,5 +35,5 @@ export function proxy(request: NextRequest) {
 }
 
 export const config = {
-  matcher: ["/", "/professional/:path*"],
+  matcher: ["/", "/ar/:path*", "/professional/:path*"],
 };

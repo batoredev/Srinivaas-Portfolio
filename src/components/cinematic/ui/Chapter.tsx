@@ -1,78 +1,62 @@
 "use client";
 
-import { motion } from "motion/react";
-import { useEffect, useRef, useState } from "react";
+import { useScroll } from "motion/react";
+import { useEffect, useRef } from "react";
 import { sectionMeta, sections, type SectionId } from "@/data/content";
 import { hudAudio } from "@/lib/audio";
-import { useSeen } from "@/lib/hooks";
 import { getStore } from "@/lib/store";
+import { Decoded, smoothstep, useProgress } from "./Decode";
 
 const TOTAL = sections.length - 1;
 
 /**
- * Chapter card between sections: the narrator (SV-OS) introduces what comes
- * next. A signal line threads each card to the chapters around it, so the
- * page reads as one continuous story rather than a stack of sections.
+ * Chapter interlude: a full-screen beat where the Core takes centre stage and
+ * re-forms into the next chapter's shape, while the narrator (SV-OS) names
+ * it. The words decode with the scroll and dissolve as the chapter begins.
  */
 export function Chapter({ id }: { id: SectionId }) {
   const meta = sectionMeta(id);
   const index = sections.findIndex((s) => s.id === id);
-  const [ref, seen] = useSeen<HTMLDivElement>("0px 0px -28% 0px");
-  const [typed, setTyped] = useState("");
+  const ref = useRef<HTMLDivElement>(null);
+  const { scrollYProgress } = useScroll({ target: ref, offset: ["start end", "end start"] });
+  const p = useProgress(scrollYProgress, 200);
   const spoke = useRef(false);
 
+  const out = smoothstep(0.76, 0.92, p);
+  const label = { inP: smoothstep(0.14, 0.28, p), outP: out };
+  const title = { inP: smoothstep(0.18, 0.34, p), outP: out };
+  const line = { inP: smoothstep(0.24, 0.44, p), outP: out };
+
   useEffect(() => {
-    if (!seen) return;
-    if (!spoke.current && getStore().audio) {
-      spoke.current = true;
-      hudAudio.speak(meta.narration);
-    }
-    let i = 0;
-    const id = setInterval(() => {
-      i++;
-      setTyped(meta.narration.slice(0, i));
-      if (i >= meta.narration.length) clearInterval(id);
-    }, 26);
-    return () => clearInterval(id);
-  }, [seen, meta.narration]);
+    if (spoke.current || p < 0.4 || p > 0.8) return;
+    spoke.current = true;
+    if (getStore().audio) hudAudio.speak(meta.narration);
+  }, [p, meta.narration]);
 
   return (
-    <div ref={ref} id={`chapter-${id}`} className="relative z-[2] flex flex-col items-center overflow-x-clip px-5 pb-6 pt-10 text-center" aria-label={`Chapter ${meta.code}: ${meta.chapter}`}>
-      {/* signal thread in */}
-      <span className="relative block h-24 w-px overflow-hidden bg-gradient-to-b from-transparent to-holo/40">
-        <span className="absolute inset-x-0 h-8 bg-gradient-to-b from-transparent via-amber to-transparent" style={{ animation: "sweep-y 2.4s linear infinite" }} />
-      </span>
+    <div
+      ref={ref}
+      id={`chapter-${id}`}
+      className="relative z-[2] flex min-h-[92svh] flex-col items-center justify-end overflow-x-clip px-5 pb-[11svh] text-center"
+      aria-label={`Chapter ${meta.code}: ${meta.chapter}`}
+    >
+      <p className="font-mono text-[11px] tracking-[0.35em] text-holo-soft/80">
+        <Decoded text={`CHAPTER ${meta.code} / ${String(TOTAL).padStart(2, "0")}`} {...label} />
+      </p>
 
-      <motion.div
-        className="mt-6 flex items-center gap-4"
-        initial={{ opacity: 0 }}
-        animate={seen ? { opacity: 1 } : undefined}
-        transition={{ duration: 0.6 }}
-      >
-        <span className="h-px w-10 bg-holo/40 sm:w-20" />
-        <span className="font-mono text-[11px] tracking-[0.35em] text-holo-soft/70">
-          CHAPTER {meta.code} / {String(TOTAL).padStart(2, "0")}
+      <h3 className="mt-4 max-w-full font-display text-[clamp(30px,6vw,84px)] font-semibold uppercase tracking-[0.16em] text-amber glow-amber">
+        <Decoded text={meta.chapter} {...title} glyphClassName="text-amber/50" />
+      </h3>
+
+      <p className="mt-4 min-h-[1.6em] max-w-[620px] font-mono text-[13.5px] leading-relaxed text-ice/85 sm:text-[15px]">
+        <span className="text-holo/60" style={{ opacity: line.inP > 0 && line.outP < 1 ? 1 : 0 }}>
+          SV-OS ›{" "}
         </span>
-        <span className="h-px w-10 bg-holo/40 sm:w-20" />
-      </motion.div>
-
-      <motion.h3
-        className="mt-4 max-w-full font-display text-[clamp(21px,4.2vw,56px)] font-semibold uppercase text-amber glow-amber"
-        initial={{ opacity: 0, letterSpacing: "0.9em", filter: "blur(10px)" }}
-        animate={seen ? { opacity: 1, letterSpacing: "0.18em", filter: "blur(0px)" } : undefined}
-        transition={{ duration: 1.3, ease: [0.16, 1, 0.3, 1] }}
-      >
-        {meta.chapter}
-      </motion.h3>
-
-      <p className="mt-5 min-h-[3.4em] max-w-[620px] font-mono text-[13.5px] leading-relaxed text-ice/80 sm:text-[15px]">
-        <span className="text-holo/60">SV-OS › </span>
-        {typed}
-        {seen && <span className="animate-blink text-amber">▌</span>}
+        <Decoded text={meta.narration} {...line} />
       </p>
 
       {/* story progress: one pip per chapter */}
-      <div className="mt-5 flex items-center gap-1.5" aria-hidden>
+      <div className="mt-6 flex items-center gap-1.5" aria-hidden style={{ opacity: 1 - out }}>
         {sections.slice(1).map((s, i) => {
           const done = i + 1 < index;
           const now = i + 1 === index;
@@ -84,9 +68,6 @@ export function Chapter({ id }: { id: SectionId }) {
           );
         })}
       </div>
-
-      {/* signal thread out */}
-      <span className="mt-8 block h-16 w-px bg-gradient-to-b from-holo/40 to-transparent" />
     </div>
   );
 }
